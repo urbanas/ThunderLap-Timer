@@ -1,8 +1,24 @@
-# PhobosLT MultiNode
+# ThunderLap Timer
+
+<p align="center">
+  <img src="assets/logo.png" alt="ThunderLap Timer Logo" width="200"/>
+</p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Multi-Node FPV Race Timing Solution - Supporting up to 4 simultaneous pilots**
+
+---
+
+## 💖 Support This Project
+
+If you enjoy using ThunderLap Timer and find it useful for your FPV racing, consider supporting future development! Your contributions help keep this project alive and fuel new features.
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.com/paypalme/Robertasurbanas)
+
+**Every contribution is appreciated!** 🙏
+
+---
 
 > **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been heavily modified to support up to 4 pilots simultaneously. The codebase has undergone extensive development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, and numerous feature additions. While approximately 30-40% of the original code is reused (core timing algorithms, RX5808 communication), this multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
 
@@ -24,7 +40,7 @@
 
 ## About
 
-PhobosLT MultiNode is an advanced lap timing solution for 5.8GHz FPV racing that supports **up to 4 simultaneous pilots**. Built on the affordable and widely-available **ESP32-WROOM-32** microcontroller and RX5808 modules, it provides real-time lap timing with a modern, mobile-responsive web interface.
+ThunderLap Timer is an advanced lap timing solution for 5.8GHz FPV racing that supports **up to 4 simultaneous pilots**. Built on the affordable and widely-available **ESP32-WROOM-32** microcontroller and RX5808 modules, it provides real-time lap timing with a modern, mobile-responsive web interface.
 
 The system is completely self-contained - it creates its own WiFi access point and serves a web application that works on any device with a browser (phone, tablet, or laptop). No additional apps or software needed!
 
@@ -110,7 +126,7 @@ For users with an **ESP32-WROOM-32** board, here's the fastest path to get racin
    - Upload filesystem image
 
 4. **Connect & Configure**
-   - Connect to WiFi: `PhobosLT_XXXX` (password: `phoboslt`)
+   - Connect to WiFi: `ThunderLap_XXXX` (password: `thunderlap`)
    - Open browser to `20.0.0.1`
    - Set your band/channel in Configuration tab
    - Calibrate RSSI thresholds
@@ -277,11 +293,11 @@ Active Buzzer ────────▶ GPIO27 ─┤
 ```bash
 # Via VSCode Command Palette (Cmd+Shift+P / Ctrl+Shift+P)
 Git: Clone
-# Enter: https://github.com/urbanas/PhobosLT-MultiNode.git
+# Enter: https://github.com/urbanas/ThunderLap-Timer.git
 
 # Or via terminal
-git clone https://github.com/urbanas/PhobosLT-MultiNode.git
-cd PhobosLT-MultiNode
+git clone https://github.com/urbanas/ThunderLap-Timer.git
+cd ThunderLap-Timer
 ```
 
 ### Select Target Hardware
@@ -330,8 +346,8 @@ default_envs = PhobosLT  ; Default: ESP32-WROOM-32 (esp32dev)
 ### First Connection
 
 1. **Power On** - Timer boots and creates WiFi access point
-2. **Connect** - Find WiFi network: `PhobosLT_XXXX`
-3. **Password** - Enter: `phoboslt`
+2. **Connect** - Find WiFi network: `ThunderLap_XXXX`
+3. **Password** - Enter: `thunderlap`
 4. **Access** - Open browser to `20.0.0.1` (or wait for auto-redirect)
 
 ### Configuration Tab
@@ -578,7 +594,7 @@ Pull requests welcome! Areas for contribution:
 - **ExpressLRS** for embedded development patterns and build system inspiration
 - **Community Contributors** for testing, feedback, and feature suggestions
 
-### What's Different in MultiNode?
+### What's Different in ThunderLap Timer?
 
 This fork extends the original PhobosLT with:
 - ✅ **4-Node Support** - Simultaneously time up to 4 pilots
