@@ -30,18 +30,12 @@
       <div id="config" class="tabcontent">
         <div class="config-container">
           <h3>Pilot Configuration</h3>
-          <table class="node-config-table">
-            <thead>
-              <tr>
-                <th class="node-header">Node 1</th>
-                <th class="node-header">Node 2</th>
-                <th class="node-header node-3">Node 3</th>
-                <th class="node-header node-4">Node 4</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
+          <div class="node-cards-container">
+            <!-- Node 1 Card -->
+            <div class="node-card">
+              <div class="node-card-header">Node 1</div>
+              <div class="node-card-body">
+                <div class="node-field">
                   <label for="bandSelect">Band:</label>
                   <select id="bandSelect">
                     <option value="A">A</option>
@@ -51,43 +45,8 @@
                     <option value="R">R</option>
                     <option value="L">L</option>
                   </select>
-                </td>
-                <td>
-                  <label for="bandSelect2">Band:</label>
-                  <select id="bandSelect2">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
-                  </select>
-                </td>
-                <td class="node-3">
-                  <label for="bandSelect3">Band:</label>
-                  <select id="bandSelect3">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
-                  </select>
-                </td>
-                <td class="node-4">
-                  <label for="bandSelect4">Band:</label>
-                  <select id="bandSelect4">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td>
+                </div>
+                <div class="node-field">
                   <label for="channelSelect">Channel:</label>
                   <select id="channelSelect">
                     <option value="1">1</option>
@@ -99,8 +58,34 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                   </select>
-                </td>
-                <td>
+                </div>
+                <div class="node-field">
+                  <label for="pname">Pilot Name:</label>
+                  <input type="text" id="pname" maxlength="20" />
+                </div>
+                <div class="node-field">
+                  <label>Frequency:</label>
+                  <div class="freq-display" id="freqOutput">5740</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Node 2 Card -->
+            <div class="node-card">
+              <div class="node-card-header">Node 2</div>
+              <div class="node-card-body">
+                <div class="node-field">
+                  <label for="bandSelect2">Band:</label>
+                  <select id="bandSelect2">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="R">R</option>
+                    <option value="L">L</option>
+                  </select>
+                </div>
+                <div class="node-field">
                   <label for="channelSelect2">Channel:</label>
                   <select id="channelSelect2">
                     <option value="1">1</option>
@@ -112,8 +97,34 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                   </select>
-                </td>
-                <td class="node-3">
+                </div>
+                <div class="node-field">
+                  <label for="pname2">Pilot Name:</label>
+                  <input type="text" id="pname2" maxlength="20" />
+                </div>
+                <div class="node-field">
+                  <label>Frequency:</label>
+                  <div class="freq-display" id="freqOutput2">5740</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Node 3 Card -->
+            <div class="node-card node-3">
+              <div class="node-card-header">Node 3</div>
+              <div class="node-card-body">
+                <div class="node-field">
+                  <label for="bandSelect3">Band:</label>
+                  <select id="bandSelect3">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="R">R</option>
+                    <option value="L">L</option>
+                  </select>
+                </div>
+                <div class="node-field">
                   <label for="channelSelect3">Channel:</label>
                   <select id="channelSelect3">
                     <option value="1">1</option>
@@ -125,8 +136,34 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                   </select>
-                </td>
-                <td class="node-4">
+                </div>
+                <div class="node-field">
+                  <label for="pname3">Pilot Name:</label>
+                  <input type="text" id="pname3" maxlength="20" />
+                </div>
+                <div class="node-field">
+                  <label>Frequency:</label>
+                  <div class="freq-display" id="freqOutput3">5740</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Node 4 Card -->
+            <div class="node-card node-4">
+              <div class="node-card-header">Node 4</div>
+              <div class="node-card-body">
+                <div class="node-field">
+                  <label for="bandSelect4">Band:</label>
+                  <select id="bandSelect4">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="R">R</option>
+                    <option value="L">L</option>
+                  </select>
+                </div>
+                <div class="node-field">
                   <label for="channelSelect4">Channel:</label>
                   <select id="channelSelect4">
                     <option value="1">1</option>
@@ -138,43 +175,21 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                   </select>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <label for="pname">Pilot Name:</label>
-                  <input type="text" id="pname" maxlength="20" placeholder="Pilot 1" />
-                </td>
-                <td>
-                  <label for="pname2">Pilot Name:</label>
-                  <input type="text" id="pname2" maxlength="20" placeholder="Pilot 2" />
-                </td>
-                <td class="node-3">
-                  <label for="pname3">Pilot Name:</label>
-                  <input type="text" id="pname3" maxlength="20" placeholder="Pilot 3" />
-                </td>
-                <td class="node-4">
+                </div>
+                <div class="node-field">
                   <label for="pname4">Pilot Name:</label>
-                  <input type="text" id="pname4" maxlength="20" placeholder="Pilot 4" />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span id="freqOutput" class="freq-display"></span>
-                </td>
-                <td>
-                  <span id="freqOutput2" class="freq-display"></span>
-                </td>
-                <td class="node-3">
-                  <span id="freqOutput3" class="freq-display"></span>
-                </td>
-                <td class="node-4">
-                  <span id="freqOutput4" class="freq-display"></span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <input type="text" id="pname4" maxlength="20" />
+                </div>
+                <div class="node-field">
+                  <label>Frequency:</label>
+                  <div class="freq-display" id="freqOutput4">5740</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <div class="config-container">
           <h3>General Settings</h3>
 
           <div class="config-item">
@@ -241,6 +256,7 @@
             <input type="password" id="pwd" maxlength="32" />
           </div>
         </div>
+
         <button id="ToggleVoiceButton" onclick="toggleVoice()">Voice: ON</button>
         <button id="GenerateAudioButton" onclick="generateAudio()">Test voice</button>
         <br>
@@ -253,40 +269,31 @@
           <div class="racebuttons">
             <button id="startRaceButton" onclick="startRace()">Start</button>
             <button id="stopRaceButton" onclick="stopRace()" disabled>Stop</button>
-            <button id="clearLapsButton" onclick="clearLaps()">Clear All Laps</button>
+            <button id="clearLapsButton" onclick="clearLaps()">Reset</button>
+          </div>
+          <div class="test-buttons">
+            <button onclick="addTestLap(1)">T1</button>
+            <button onclick="addTestLap(2)">T2</button>
+            <button onclick="addTestLap(3)">T3</button>
+            <button onclick="addTestLap(4)">T4</button>
           </div>
         </div>
         
-        <table class="race-layout-table">
+        <!-- Desktop view: side-by-side tables -->
+        <table class="race-layout-table desktop-race-table">
           <thead>
             <tr>
               <th class="pilot-header">
                 <span id="pilot1Name">Pilot 1</span> (Node 1)
-                <div class="node-controls">
-                  <button onclick="startRace(1)">Start</button>
-                  <button onclick="stopRace(1)">Stop</button>
-                </div>
               </th>
               <th class="pilot-header">
                 <span id="pilot2Name">Pilot 2</span> (Node 2)
-                <div class="node-controls">
-                  <button onclick="startRace(2)">Start</button>
-                  <button onclick="stopRace(2)">Stop</button>
-                </div>
               </th>
               <th class="pilot-header node-3">
                 <span id="pilot3Name">Pilot 3</span> (Node 3)
-                <div class="node-controls">
-                  <button onclick="startRace(3)">Start</button>
-                  <button onclick="stopRace(3)">Stop</button>
-                </div>
               </th>
               <th class="pilot-header node-4">
                 <span id="pilot4Name">Pilot 4</span> (Node 4)
-                <div class="node-controls">
-                  <button onclick="startRace(4)">Start</button>
-                  <button onclick="stopRace(4)">Stop</button>
-                </div>
               </th>
             </tr>
           </thead>
@@ -331,6 +338,38 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Mobile view: simple single table -->
+        <div class="mobile-race-table">
+          <!-- Single node view: traditional format -->
+          <div class="single-node-table">
+            <table id="singleNodeLapTable" class="lap-times-table">
+              <tr>
+                <th>Lap</th>
+                <th>Time</th>
+                <th>3-Lap</th>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- Multi-node view: compact format -->
+          <div class="multi-node-table">
+            <table id="mobileLapTable">
+              <thead>
+                <tr>
+                  <th>Lap</th>
+                  <th class="node-col node-1">N1</th>
+                  <th class="node-col node-2">N2</th>
+                  <th class="node-col node-3">N3</th>
+                  <th class="node-col node-4">N4</th>
+                </tr>
+              </thead>
+              <tbody id="mobileLapTableBody">
+                <!-- Rows will be added dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <div id="calib" class="tabcontent">
@@ -342,14 +381,14 @@
           <div class="config-item">
             <label for="enter">Enter RSSI:</label>
             <div class="input-with-value">
-              <span id="enterSpan" class="val">120</span>
+              <input type="number" min="50" max="255" step="1" id="enterInput" value="120" oninput="updateEnterRssi(this,value)" />
               <input type="range" min="50" max="255" step="1" id="enter" value="120" oninput="updateEnterRssi(this,value)" />
             </div>
           </div>
           <div class="config-item">
             <label for="exit">Exit RSSI:</label>
             <div class="input-with-value">
-              <span id="exitSpan" class="val">100</span>
+              <input type="number" min="50" max="255" step="1" id="exitInput" value="100" oninput="updateExitRssi(this,value)" />
               <input type="range" min="50" max="255" step="1" id="exit" value="100" oninput="updateExitRssi(this,value)" />
             </div>
           </div>
@@ -363,14 +402,14 @@
           <div class="config-item">
             <label for="enter2">Enter RSSI:</label>
             <div class="input-with-value">
-              <span id="enterSpan2" class="val">120</span>
+              <input type="number" min="50" max="255" step="1" id="enterInput2" value="120" oninput="updateEnterRssi2(this,value)" />
               <input type="range" min="50" max="255" step="1" id="enter2" value="120" oninput="updateEnterRssi2(this,value)" />
             </div>
           </div>
           <div class="config-item">
             <label for="exit2">Exit RSSI:</label>
             <div class="input-with-value">
-              <span id="exitSpan2" class="val">100</span>
+              <input type="number" min="50" max="255" step="1" id="exitInput2" value="100" oninput="updateExitRssi2(this,value)" />
               <input type="range" min="50" max="255" step="1" id="exit2" value="100" oninput="updateExitRssi2(this,value)" />
             </div>
           </div>
@@ -384,14 +423,14 @@
           <div class="config-item">
             <label for="enter3">Enter RSSI:</label>
             <div class="input-with-value">
-              <span id="enterSpan3" class="val">120</span>
+              <input type="number" min="50" max="255" step="1" id="enterInput3" value="120" oninput="updateEnterRssi3(this,value)" />
               <input type="range" min="50" max="255" step="1" id="enter3" value="120" oninput="updateEnterRssi3(this,value)" />
             </div>
           </div>
           <div class="config-item">
             <label for="exit3">Exit RSSI:</label>
             <div class="input-with-value">
-              <span id="exitSpan3" class="val">100</span>
+              <input type="number" min="50" max="255" step="1" id="exitInput3" value="100" oninput="updateExitRssi3(this,value)" />
               <input type="range" min="50" max="255" step="1" id="exit3" value="100" oninput="updateExitRssi3(this,value)" />
             </div>
           </div>
@@ -405,14 +444,14 @@
           <div class="config-item">
             <label for="enter4">Enter RSSI:</label>
             <div class="input-with-value">
-              <span id="enterSpan4" class="val">120</span>
+              <input type="number" min="50" max="255" step="1" id="enterInput4" value="120" oninput="updateEnterRssi4(this,value)" />
               <input type="range" min="50" max="255" step="1" id="enter4" value="120" oninput="updateEnterRssi4(this,value)" />
             </div>
           </div>
           <div class="config-item">
             <label for="exit4">Exit RSSI:</label>
             <div class="input-with-value">
-              <span id="exitSpan4" class="val">100</span>
+              <input type="number" min="50" max="255" step="1" id="exitInput4" value="100" oninput="updateExitRssi4(this,value)" />
               <input type="range" min="50" max="255" step="1" id="exit4" value="100" oninput="updateExitRssi4(this,value)" />
             </div>
           </div>
@@ -423,7 +462,25 @@
     </main>
 
     <footer>
-      <p>Powered by <a href="https://github.com/phobos-/PhobosLT" target="_blank" style="color: white">PhobosLT</a></p>
+      <div class="footer-content">
+        <div class="footer-controls">
+          <div class="theme-selector">
+            <label for="themeSelect">Theme:</label>
+            <select id="themeSelect" onchange="changeTheme(this.value)">
+              <option value="ocean">Ocean Teal</option>
+              <option value="purple">Purple Haze</option>
+              <option value="cyan">Cyber Cyan</option>
+              <option value="orange" selected>Sunset Orange</option>
+              <option value="green">Matrix Green</option>
+            </select>
+          </div>
+          <div class="debug-toggle">
+            <label for="debugToggle">Debug:</label>
+            <input type="checkbox" id="debugToggle" onchange="toggleDebugMode(this.checked)" />
+          </div>
+        </div>
+        <p>Powered by <a href="https://github.com/phobos-/PhobosLT" target="_blank" style="color: white">PhobosLT</a></p>
+      </div>
     </footer>
 
     <script src="script.js"></script>

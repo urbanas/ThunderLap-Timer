@@ -1,3 +1,176 @@
+// Theme color palettes
+const themes = {
+  ocean: {
+    name: 'Ocean Teal',
+    primaryGradient: 'linear-gradient(135deg, #14b8a6 0%, #0891b2 100%)',
+    secondaryGradient: 'linear-gradient(135deg, #2dd4bf 0%, #06b6d4 100%)',
+    successGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    primaryColor: '#14b8a6',
+    primaryDark: '#0d9488',
+    accentColor: '#2dd4bf',
+    bgMain: '#0c1415',
+    bgCard: '#132123',
+    bgCardHover: '#1a2e31',
+    bgInput: '#0e1819',
+    textPrimary: '#ecfeff',
+    textSecondary: '#a5d4d8',
+    borderColor: '#1e3438',
+    borderAccent: '#14b8a6',
+    bgGradient1: 'rgba(20, 184, 166, 0.08)',
+    bgGradient2: 'rgba(8, 145, 178, 0.08)',
+    bgGradient3: 'rgba(45, 212, 191, 0.05)',
+    focusShadow: 'rgba(20, 184, 166, 0.15)',
+  },
+  purple: {
+    name: 'Purple Haze',
+    primaryGradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    secondaryGradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
+    successGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    primaryColor: '#8b5cf6',
+    primaryDark: '#7c3aed',
+    accentColor: '#a78bfa',
+    bgMain: '#0f0a1e',
+    bgCard: '#1a1229',
+    bgCardHover: '#241937',
+    bgInput: '#130e21',
+    textPrimary: '#f3e8ff',
+    textSecondary: '#d8b4fe',
+    borderColor: '#2e1f42',
+    borderAccent: '#8b5cf6',
+    bgGradient1: 'rgba(139, 92, 246, 0.08)',
+    bgGradient2: 'rgba(124, 58, 237, 0.08)',
+    bgGradient3: 'rgba(167, 139, 250, 0.05)',
+    focusShadow: 'rgba(139, 92, 246, 0.15)',
+  },
+  cyan: {
+    name: 'Cyber Cyan',
+    primaryGradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
+    secondaryGradient: 'linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)',
+    successGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    primaryColor: '#06b6d4',
+    primaryDark: '#0284c7',
+    accentColor: '#22d3ee',
+    bgMain: '#0a1621',
+    bgCard: '#0f1e2e',
+    bgCardHover: '#162839',
+    bgInput: '#0c1922',
+    textPrimary: '#e0f2fe',
+    textSecondary: '#a5d8f3',
+    borderColor: '#1e3344',
+    borderAccent: '#06b6d4',
+    bgGradient1: 'rgba(6, 182, 212, 0.08)',
+    bgGradient2: 'rgba(2, 132, 199, 0.08)',
+    bgGradient3: 'rgba(34, 211, 238, 0.05)',
+    focusShadow: 'rgba(6, 182, 212, 0.15)',
+  },
+  orange: {
+    name: 'Sunset Orange',
+    primaryGradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    secondaryGradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)',
+    successGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    primaryColor: '#f59e0b',
+    primaryDark: '#d97706',
+    accentColor: '#fb923c',
+    bgMain: '#1a1209',
+    bgCard: '#221a10',
+    bgCardHover: '#2d2415',
+    bgInput: '#1c1510',
+    textPrimary: '#fef3e2',
+    textSecondary: '#fcd9a5',
+    borderColor: '#3d2f1e',
+    borderAccent: '#f59e0b',
+    bgGradient1: 'rgba(245, 158, 11, 0.08)',
+    bgGradient2: 'rgba(217, 119, 6, 0.08)',
+    bgGradient3: 'rgba(251, 146, 60, 0.05)',
+    focusShadow: 'rgba(245, 158, 11, 0.15)',
+  },
+  green: {
+    name: 'Matrix Green',
+    primaryGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    secondaryGradient: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+    successGradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+    primaryColor: '#10b981',
+    primaryDark: '#059669',
+    accentColor: '#34d399',
+    bgMain: '#0a1410',
+    bgCard: '#0f1e18',
+    bgCardHover: '#142822',
+    bgInput: '#0c1812',
+    textPrimary: '#ecfdf5',
+    textSecondary: '#a7f3d0',
+    borderColor: '#1e3a2e',
+    borderAccent: '#10b981',
+    bgGradient1: 'rgba(16, 185, 129, 0.08)',
+    bgGradient2: 'rgba(5, 150, 105, 0.08)',
+    bgGradient3: 'rgba(52, 211, 153, 0.05)',
+    focusShadow: 'rgba(16, 185, 129, 0.15)',
+  }
+};
+
+// Apply theme to the page
+function changeTheme(themeName) {
+  const theme = themes[themeName];
+  if (!theme) return;
+  
+  const root = document.documentElement;
+  
+  // Update CSS variables
+  root.style.setProperty('--primary-gradient', theme.primaryGradient);
+  root.style.setProperty('--secondary-gradient', theme.secondaryGradient);
+  root.style.setProperty('--success-gradient', theme.successGradient);
+  root.style.setProperty('--primary-color', theme.primaryColor);
+  root.style.setProperty('--primary-dark', theme.primaryDark);
+  root.style.setProperty('--accent-color', theme.accentColor);
+  root.style.setProperty('--bg-main', theme.bgMain);
+  root.style.setProperty('--bg-card', theme.bgCard);
+  root.style.setProperty('--bg-card-hover', theme.bgCardHover);
+  root.style.setProperty('--bg-input', theme.bgInput);
+  root.style.setProperty('--text-primary', theme.textPrimary);
+  root.style.setProperty('--text-secondary', theme.textSecondary);
+  root.style.setProperty('--border-color', theme.borderColor);
+  root.style.setProperty('--border-accent', theme.borderAccent);
+  
+  // Update background gradient
+  const bgElement = document.querySelector('body::before') || document.body;
+  document.body.style.setProperty('--bg-gradient-1', theme.bgGradient1);
+  document.body.style.setProperty('--bg-gradient-2', theme.bgGradient2);
+  document.body.style.setProperty('--bg-gradient-3', theme.bgGradient3);
+  
+  // Save preference to localStorage
+  localStorage.setItem('selectedTheme', themeName);
+}
+
+// Load saved theme on page load
+function loadSavedTheme() {
+  const savedTheme = localStorage.getItem('selectedTheme') || 'orange';
+  const themeSelect = document.getElementById('themeSelect');
+  if (themeSelect) {
+    themeSelect.value = savedTheme;
+    changeTheme(savedTheme);
+  }
+}
+
+// Toggle debug mode
+function toggleDebugMode(enabled) {
+  const testButtons = document.querySelector('.test-buttons');
+  if (testButtons) {
+    testButtons.style.display = enabled ? 'flex' : 'none';
+  }
+  
+  // Save preference to localStorage
+  localStorage.setItem('debugMode', enabled ? 'true' : 'false');
+}
+
+// Load saved debug mode on page load
+function loadSavedDebugMode() {
+  const savedDebugMode = localStorage.getItem('debugMode') === 'true';
+  const debugToggle = document.getElementById('debugToggle');
+  if (debugToggle) {
+    debugToggle.checked = savedDebugMode;
+    toggleDebugMode(savedDebugMode);
+  }
+}
+
 // Frequency lookup table for all bands
 const freqLookup = [
   [5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725], // Band A
@@ -30,10 +203,10 @@ function initializeNodes() {
       bandSelect: document.getElementById("bandSelect"),
       channelSelect: document.getElementById("channelSelect"),
       freqOutput: document.getElementById("freqOutput"),
-      enterRssiInput: document.getElementById("enter"),
-      exitRssiInput: document.getElementById("exit"),
-      enterRssiSpan: document.getElementById("enterSpan"),
-      exitRssiSpan: document.getElementById("exitSpan"),
+      enterRssiSlider: document.getElementById("enter"),
+      exitRssiSlider: document.getElementById("exit"),
+      enterRssiInput: document.getElementById("enterInput"),
+      exitRssiInput: document.getElementById("exitInput"),
       pilotNameInput: document.getElementById("pname"),
       pilotNameDisplay: document.getElementById("pilot1Name"),
       lapTable: document.getElementById("lapTable"),
@@ -58,10 +231,10 @@ function initializeNodes() {
       bandSelect: document.getElementById("bandSelect2"),
       channelSelect: document.getElementById("channelSelect2"),
       freqOutput: document.getElementById("freqOutput2"),
-      enterRssiInput: document.getElementById("enter2"),
-      exitRssiInput: document.getElementById("exit2"),
-      enterRssiSpan: document.getElementById("enterSpan2"),
-      exitRssiSpan: document.getElementById("exitSpan2"),
+      enterRssiSlider: document.getElementById("enter2"),
+      exitRssiSlider: document.getElementById("exit2"),
+      enterRssiInput: document.getElementById("enterInput2"),
+      exitRssiInput: document.getElementById("exitInput2"),
       pilotNameInput: document.getElementById("pname2"),
       pilotNameDisplay: document.getElementById("pilot2Name"),
       lapTable: document.getElementById("lapTable2"),
@@ -86,10 +259,10 @@ function initializeNodes() {
       bandSelect: document.getElementById("bandSelect3"),
       channelSelect: document.getElementById("channelSelect3"),
       freqOutput: document.getElementById("freqOutput3"),
-      enterRssiInput: document.getElementById("enter3"),
-      exitRssiInput: document.getElementById("exit3"),
-      enterRssiSpan: document.getElementById("enterSpan3"),
-      exitRssiSpan: document.getElementById("exitSpan3"),
+      enterRssiSlider: document.getElementById("enter3"),
+      exitRssiSlider: document.getElementById("exit3"),
+      enterRssiInput: document.getElementById("enterInput3"),
+      exitRssiInput: document.getElementById("exitInput3"),
       pilotNameInput: document.getElementById("pname3"),
       pilotNameDisplay: document.getElementById("pilot3Name"),
       lapTable: document.getElementById("lapTable3"),
@@ -114,10 +287,10 @@ function initializeNodes() {
       bandSelect: document.getElementById("bandSelect4"),
       channelSelect: document.getElementById("channelSelect4"),
       freqOutput: document.getElementById("freqOutput4"),
-      enterRssiInput: document.getElementById("enter4"),
-      exitRssiInput: document.getElementById("exit4"),
-      enterRssiSpan: document.getElementById("enterSpan4"),
-      exitRssiSpan: document.getElementById("exitSpan4"),
+      enterRssiSlider: document.getElementById("enter4"),
+      exitRssiSlider: document.getElementById("exit4"),
+      enterRssiInput: document.getElementById("enterInput4"),
+      exitRssiInput: document.getElementById("exitInput4"),
       pilotNameInput: document.getElementById("pname4"),
       pilotNameDisplay: document.getElementById("pilot4Name"),
       lapTable: document.getElementById("lapTable4"),
@@ -163,6 +336,10 @@ onload = function (e) {
   // Initialize DOM references first
   initializeNodes();
   
+  // Load saved theme
+  loadSavedTheme();
+  loadSavedDebugMode();
+  
   commonElements.config.style.display = "block";
   commonElements.race.style.display = "none";
   commonElements.calib.style.display = "none";
@@ -178,9 +355,20 @@ onload = function (e) {
 function updateActiveNodeCount(count) {
   const nodeCount = parseInt(count);
   
-  // Get all elements with node-3 and node-4 classes
-  const node3Elements = document.querySelectorAll('.node-3');
-  const node4Elements = document.querySelectorAll('.node-4');
+  // Handle node cards visibility (new card layout)
+  const allNodeCards = document.querySelectorAll('.node-card');
+  allNodeCards.forEach((card, index) => {
+    const nodeNum = index + 1;
+    if (nodeNum <= nodeCount) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  
+  // Get all elements with node-3 and node-4 classes (for race and calibration tabs)
+  const node3Elements = document.querySelectorAll('.node-3:not(.node-card)');
+  const node4Elements = document.querySelectorAll('.node-4:not(.node-card)');
   
   // Show/hide node 3 elements
   node3Elements.forEach(el => {
@@ -200,18 +388,6 @@ function updateActiveNodeCount(count) {
     }
   });
   
-  // Handle node 2 visibility (special case for when only 1 node is selected)
-  // Node 2 columns in config table
-  const node2ConfigCells = document.querySelectorAll('.node-config-table tbody td:nth-child(2)');
-  const node2ConfigHeader = document.querySelectorAll('.node-config-table thead th:nth-child(2)');
-  
-  node2ConfigCells.forEach(el => {
-    el.style.display = nodeCount >= 2 ? '' : 'none';
-  });
-  node2ConfigHeader.forEach(el => {
-    el.style.display = nodeCount >= 2 ? '' : 'none';
-  });
-  
   // Node 2 in race table
   const node2RaceHeader = document.querySelector('.race-layout-table .pilot-header:nth-child(2)');
   const node2RaceCell = document.querySelector('.race-layout-table .lap-table-cell:nth-child(2)');
@@ -224,9 +400,7 @@ function updateActiveNodeCount(count) {
     el.style.display = nodeCount >= 2 ? '' : 'none';
   });
   
-  // Dynamically adjust column widths based on node count
-  const configHeaders = document.querySelectorAll('.node-config-table thead th');
-  const configCells = document.querySelectorAll('.node-config-table tbody td');
+  // Update race table widths (cards don't need width management)
   const raceHeaders = document.querySelectorAll('.race-layout-table .pilot-header');
   const raceCells = document.querySelectorAll('.race-layout-table .lap-table-cell');
   
@@ -238,20 +412,6 @@ function updateActiveNodeCount(count) {
   };
   
   const width = widthMap[nodeCount];
-  
-  // Update config table widths
-  configHeaders.forEach((el, index) => {
-    if (index < nodeCount) {
-      el.style.width = width;
-    }
-  });
-  
-  configCells.forEach((el, index) => {
-    const colIndex = (index % 4) + 1; // Which column (1-4)
-    if (colIndex <= nodeCount) {
-      el.style.width = width;
-    }
-  });
   
   // Update race table widths
   raceHeaders.forEach((el, index) => {
@@ -283,6 +443,40 @@ function updateActiveNodeCount(count) {
         nodes[i].rssiChart = null;
       }
     }
+  }
+  
+  // Update mobile race table column visibility
+  const mobileTable = document.getElementById('mobileLapTable');
+  const singleNodeTableDiv = document.querySelector('.single-node-table');
+  const multiNodeTableDiv = document.querySelector('.multi-node-table');
+  
+  if (singleNodeTableDiv && multiNodeTableDiv) {
+    // Show single node table for 1 node, multi-node table for 2+
+    if (nodeCount === 1) {
+      singleNodeTableDiv.style.display = 'block';
+      multiNodeTableDiv.style.display = 'none';
+    } else {
+      singleNodeTableDiv.style.display = 'none';
+      multiNodeTableDiv.style.display = 'block';
+    }
+  }
+  
+  if (mobileTable && nodeCount > 1) {
+    // Show/hide N3 column
+    const node3Headers = mobileTable.querySelectorAll('.node-col.node-3');
+    node3Headers.forEach(el => el.style.display = nodeCount >= 3 ? '' : 'none');
+    
+    // Show/hide N4 column
+    const node4Headers = mobileTable.querySelectorAll('.node-col.node-4');
+    node4Headers.forEach(el => el.style.display = nodeCount >= 4 ? '' : 'none');
+    
+    // Update all data rows
+    const rows = document.querySelectorAll('#mobileLapTableBody tr');
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells[3]) cells[3].style.display = nodeCount >= 3 ? '' : 'none'; // Node 3
+      if (cells[4]) cells[4].style.display = nodeCount >= 4 ? '' : 'none'; // Node 4
+    });
   }
 }
 
@@ -370,7 +564,16 @@ function configureNode(nodeId, config) {
   node.exitRssiInput.value = config.exitRssi;
   updateExitRssiForNode(nodeId, config.exitRssi);
   node.pilotNameInput.value = config.pilotName;
-  node.pilotNameDisplay.textContent = config.pilotName || `Pilot ${nodeId}`;
+  
+  // Update pilot name display
+  const pilotName = config.pilotName || `Pilot ${nodeId}`;
+  node.pilotNameDisplay.textContent = pilotName;
+  
+  // Update lap table data attribute for mobile display
+  if (node.lapTable) {
+    node.lapTable.setAttribute('data-pilot-name', `${pilotName} (N${nodeId})`);
+  }
+  
   populateFreqOutput(nodeId);
 }
 
@@ -379,10 +582,38 @@ function setupEventListeners() {
   // Node 1 event listeners
   nodes[1].bandSelect.addEventListener("change", () => populateFreqOutput(1));
   nodes[1].channelSelect.addEventListener("change", () => populateFreqOutput(1));
+  nodes[1].pilotNameInput.addEventListener("input", function() {
+    const pilotName = this.value || "Pilot 1";
+    nodes[1].pilotNameDisplay.textContent = pilotName;
+    nodes[1].lapTable.setAttribute('data-pilot-name', `${pilotName} (N1)`);
+  });
   
   // Node 2 event listeners
   nodes[2].bandSelect.addEventListener("change", () => populateFreqOutput(2));
   nodes[2].channelSelect.addEventListener("change", () => populateFreqOutput(2));
+  nodes[2].pilotNameInput.addEventListener("input", function() {
+    const pilotName = this.value || "Pilot 2";
+    nodes[2].pilotNameDisplay.textContent = pilotName;
+    nodes[2].lapTable.setAttribute('data-pilot-name', `${pilotName} (N2)`);
+  });
+  
+  // Node 3 event listeners
+  nodes[3].bandSelect.addEventListener("change", () => populateFreqOutput(3));
+  nodes[3].channelSelect.addEventListener("change", () => populateFreqOutput(3));
+  nodes[3].pilotNameInput.addEventListener("input", function() {
+    const pilotName = this.value || "Pilot 3";
+    nodes[3].pilotNameDisplay.textContent = pilotName;
+    nodes[3].lapTable.setAttribute('data-pilot-name', `${pilotName} (N3)`);
+  });
+  
+  // Node 4 event listeners
+  nodes[4].bandSelect.addEventListener("change", () => populateFreqOutput(4));
+  nodes[4].channelSelect.addEventListener("change", () => populateFreqOutput(4));
+  nodes[4].pilotNameInput.addEventListener("input", function() {
+    const pilotName = this.value || "Pilot 4";
+    nodes[4].pilotNameDisplay.textContent = pilotName;
+    nodes[4].lapTable.setAttribute('data-pilot-name', `${pilotName} (N4)`);
+  });
   
   // Start battery voltage polling
   setInterval(getBatteryVoltage, 2000);
@@ -598,24 +829,46 @@ function openTab(evt, tabName) {
 function updateEnterRssiForNode(nodeId, value) {
   const node = nodes[nodeId];
   node.enterRssi = parseInt(value);
-  node.enterRssiSpan.textContent = node.enterRssi;
+  
+  // Sync both slider and number input
+  node.enterRssiSlider.value = node.enterRssi;
+  node.enterRssiInput.value = node.enterRssi;
   
   if (node.enterRssi <= node.exitRssi) {
     node.exitRssi = Math.max(0, node.enterRssi - 1);
+    node.exitRssiSlider.value = node.exitRssi;
     node.exitRssiInput.value = node.exitRssi;
-    node.exitRssiSpan.textContent = node.exitRssi;
+  }
+  
+  // Update chart scaling
+  node.maxRssiValue = node.enterRssi + 10;
+  node.minRssiValue = node.exitRssi - 10;
+  if (node.rssiChart) {
+    node.rssiChart.options.maxValue = node.maxRssiValue;
+    node.rssiChart.options.minValue = Math.max(0, node.minRssiValue);
   }
 }
 
 function updateExitRssiForNode(nodeId, value) {
   const node = nodes[nodeId];
   node.exitRssi = parseInt(value);
-  node.exitRssiSpan.textContent = node.exitRssi;
+  
+  // Sync both slider and number input
+  node.exitRssiSlider.value = node.exitRssi;
+  node.exitRssiInput.value = node.exitRssi;
   
   if (node.exitRssi >= node.enterRssi) {
     node.enterRssi = Math.min(255, node.exitRssi + 1);
+    node.enterRssiSlider.value = node.enterRssi;
     node.enterRssiInput.value = node.enterRssi;
-    node.enterRssiSpan.textContent = node.enterRssi;
+  }
+  
+  // Update chart scaling
+  node.maxRssiValue = node.enterRssi + 10;
+  node.minRssiValue = node.exitRssi - 10;
+  if (node.rssiChart) {
+    node.rssiChart.options.maxValue = node.maxRssiValue;
+    node.rssiChart.options.minValue = Math.max(0, node.minRssiValue);
   }
 }
 
@@ -851,11 +1104,7 @@ function addLap(lapStr, nodeId = 1) {
   const cell3 = row.insertCell(2);
   
   cell1.innerHTML = node.lapNo;
-  if (node.lapNo == 0) {
-    cell2.innerHTML = "Hole Shot: " + lapStr + "s";
-  } else {
-    cell2.innerHTML = lapStr + "s";
-  }
+  cell2.innerHTML = lapStr + "s";
   
   // Calculate 2-lap time for announcer (not displayed in table)
   if (node.lapTimes.length >= 2 && node.lapNo != 0) {
@@ -904,12 +1153,17 @@ function addLap(lapStr, nodeId = 1) {
     default:
       break;
   }
+  
+  // Update mobile table
+  updateMobileLapTable();
 }
 
 function clearLaps() {
   const tableHeaderRowCount = 1;
+  const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value);
   
-  [1, 2].forEach(nodeId => {
+  // Clear desktop tables
+  for (let nodeId = 1; nodeId <= 4; nodeId++) {
     const node = nodes[nodeId];
     const rowCount = node.lapTable.rows.length;
     for (let i = tableHeaderRowCount; i < rowCount; i++) {
@@ -917,7 +1171,118 @@ function clearLaps() {
     }
     node.lapNo = -1;
     node.lapTimes = [];
-  });
+  }
+  
+  // Clear mobile multi-node table
+  const mobileLapTableBody = document.getElementById('mobileLapTableBody');
+  if (mobileLapTableBody) {
+    mobileLapTableBody.innerHTML = '';
+  }
+  
+  // Clear mobile single-node table
+  const singleNodeTable = document.getElementById('singleNodeLapTable');
+  if (singleNodeTable) {
+    const rowCount = singleNodeTable.rows.length;
+    for (let i = tableHeaderRowCount; i < rowCount; i++) {
+      singleNodeTable.deleteRow(tableHeaderRowCount);
+    }
+  }
+}
+
+// Add test lap for debugging
+function addTestLap(nodeId) {
+  const node = nodes[nodeId];
+  const randomTime = (Math.random() * 20 + 10).toFixed(2); // Random time between 10-30 seconds
+  
+  // Add to desktop table (addLap expects lapStr first, then nodeId)
+  addLap(randomTime, nodeId);
+  
+  // Update mobile table
+  updateMobileLapTable();
+}
+
+// Update the mobile lap table with all laps
+function updateMobileLapTable() {
+  const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value);
+  
+  // For single node, use traditional table format
+  if (activeNodeCount === 1) {
+    updateSingleNodeTable();
+    return;
+  }
+  
+  // For multiple nodes, use compact format
+  const mobileLapTableBody = document.getElementById('mobileLapTableBody');
+  if (!mobileLapTableBody) return;
+  
+  // Find max lap count across all active nodes
+  let maxLaps = 0;
+  for (let nodeId = 1; nodeId <= activeNodeCount; nodeId++) {
+    maxLaps = Math.max(maxLaps, nodes[nodeId].lapTimes.length);
+  }
+  
+  // Clear and rebuild table
+  mobileLapTableBody.innerHTML = '';
+  
+  // Add rows for each lap
+  for (let lapIndex = 0; lapIndex < maxLaps; lapIndex++) {
+    const row = mobileLapTableBody.insertRow();
+    
+    // Lap number cell (0 for first lap)
+    const lapCell = row.insertCell();
+    lapCell.textContent = lapIndex;
+    
+    // Node time cells (always create all 4, but hide inactive ones)
+    for (let nodeId = 1; nodeId <= 4; nodeId++) {
+      const timeCell = row.insertCell();
+      
+      // Hide columns for inactive nodes
+      if (nodeId > activeNodeCount) {
+        timeCell.style.display = 'none';
+      }
+      
+      if (nodeId <= activeNodeCount && nodes[nodeId].lapTimes[lapIndex] !== undefined) {
+        timeCell.textContent = nodes[nodeId].lapTimes[lapIndex].toFixed(2) + 's';
+      } else {
+        timeCell.textContent = '-';
+      }
+    }
+  }
+}
+
+// Update single node table (traditional format)
+function updateSingleNodeTable() {
+  const singleNodeTable = document.getElementById('singleNodeLapTable');
+  if (!singleNodeTable) return;
+  
+  const node = nodes[1];
+  const tableHeaderRowCount = 1;
+  
+  // Clear existing rows (except header)
+  const rowCount = singleNodeTable.rows.length;
+  for (let i = tableHeaderRowCount; i < rowCount; i++) {
+    singleNodeTable.deleteRow(tableHeaderRowCount);
+  }
+  
+  // Add all laps
+  for (let lapIndex = 0; lapIndex < node.lapTimes.length; lapIndex++) {
+    const row = singleNodeTable.insertRow();
+    const cell1 = row.insertCell(0);
+    const cell2 = row.insertCell(1);
+    const cell3 = row.insertCell(2);
+    
+    // Lap number (0 for first lap)
+    cell1.innerHTML = lapIndex;
+    cell2.innerHTML = node.lapTimes[lapIndex].toFixed(2) + "s";
+    
+    // Calculate 3-lap time
+    if (lapIndex >= 3) {
+      const last3lapTime = (node.lapTimes[lapIndex] + 
+                           node.lapTimes[lapIndex - 1] + 
+                           node.lapTimes[lapIndex - 2]).toFixed(2);
+      cell3.innerHTML = last3lapTime + "s";
+    }
+  }
 }
 
 // Timer management
