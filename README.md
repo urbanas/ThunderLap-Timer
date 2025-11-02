@@ -1,6 +1,6 @@
 # PhobosLT MultiNode
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/paypalme/Robertasurbanas)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Multi-Node FPV Race Timing Solution - Supporting up to 4 simultaneous pilots**
 
