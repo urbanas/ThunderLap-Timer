@@ -1,10 +1,38 @@
 :root {
-  --primary-color: #7cb5ec;
-  --primary-color-dark: #5a9bd8;
-  --secondary-color: #434348;
-  --background-color: #f8f9fa;
-  --text-color: #333;
-  --border-color: #dee2e6;
+  /* Ocean/Teal Dark Color Palette */
+  --primary-gradient: linear-gradient(135deg, #14b8a6 0%, #0891b2 100%);
+  --secondary-gradient: linear-gradient(135deg, #2dd4bf 0%, #06b6d4 100%);
+  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --danger-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  
+  --primary-color: #14b8a6;
+  --primary-dark: #0d9488;
+  --secondary-color: #0891b2;
+  --accent-color: #2dd4bf;
+  
+  --bg-main: #0c1415;
+  --bg-card: #132123;
+  --bg-card-hover: #1a2e31;
+  --bg-input: #0e1819;
+  
+  --text-primary: #ecfeff;
+  --text-secondary: #a5d4d8;
+  --text-muted: #6b8d92;
+  
+  --border-color: #1e3438;
+  --border-accent: #14b8a6;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
 }
 
 * {
@@ -14,140 +42,207 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.6;
-  color: var(--text-color);
-  background-color: var(--background-color);
+  color: var(--text-primary);
+  background: var(--bg-main);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: scroll; /* Force scrollbar to always show */
 }
 
+/* Animated Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, var(--bg-gradient-1, rgba(20, 184, 166, 0.08)) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, var(--bg-gradient-2, rgba(8, 145, 178, 0.08)) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, var(--bg-gradient-3, rgba(45, 212, 191, 0.05)) 0%, transparent 50%);
+  z-index: -1;
+  animation: backgroundShift 20s ease infinite;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Header */
 header {
-  background-color: var(--primary-color);
+  background: var(--primary-gradient);
   color: white;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px 32px;
+  box-shadow: var(--shadow-lg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  position: relative;
 }
 
 nav {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .logo {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .logo h1 {
-  margin-left: 16px;
-  font-size: 32px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 16px;
-  padding-top: 16px;
-  justify-content: space-around;
+  gap: 8px;
 }
 
 .nav-links a {
-  color: white;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  font-weight: 500;
+  font-size: 15px;
+  position: relative;
+  background: transparent;
 }
 
 .nav-links a:hover,
 .nav-links a.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Main Content */
 main {
-  margin: 8px;
-  padding: 0 8px;
   flex-grow: 1;
+  padding: 32px 16px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .tabcontent {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 8px; 
+  display: none;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+  border: 1px solid var(--border-color);
+  animation: fadeIn 0.3s ease;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Configuration Container */
 .config-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
-#bandChannelFreq {
-  display: flex;
-  gap: 16px;
-}
-
-#bandChannelFreq label {
-  min-width: 0px;
-  padding-right: 16px;
+.config-container h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-accent);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .config-item {
   display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
 }
 
 .config-item label {
-  min-width: 170px;
-  font-weight: bold;
+  min-width: 180px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Styling */
+.config-item input[type="text"],
+.config-item input[type="password"],
+.config-item input[type="number"],
+.config-item select {
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  transition: all var(--transition-normal);
+  font-family: inherit;
+  min-height: 44px;
+}
+
+.config-item input[type="text"]:focus,
+.config-item input[type="password"]:focus,
+.config-item input[type="number"]:focus,
+.config-item select:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+  background: var(--bg-card);
 }
 
 .config-item input[type="text"],
 .config-item input[type="password"] {
   flex: 1;
-  max-width: 300px;
+  max-width: 350px;
 }
 
 .config-item input[type="number"] {
   flex: 0 1 auto;
-  max-width: 120px;
+  max-width: 140px;
 }
 
 .config-item select {
   flex: 0 1 auto;
+  cursor: pointer;
 }
 
-.input-with-value {
-  flex: 0 1 auto;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* Touch-friendly inputs */
-.config-item input[type="text"],
-.config-item input[type="password"],
-.config-item input[type="number"] {
-  min-height: 44px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-}
-
-.config-item select {
-  min-width: 50px;
-  min-height: 44px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-}
-
-/* Make announcer select only as wide as its content */
 #announcerSelect {
   flex: 0 1 auto;
   width: auto;
@@ -155,689 +250,878 @@ main {
 }
 
 .input-with-value {
+  flex: 0 1 auto;
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 8px;
-}
-
-.input-with-value input[type="range"] {
-  flex-grow: 1;
 }
 
 .input-with-value .val {
-  width: 35px;
+  min-width: 40px;
   text-align: left;
+  font-weight: 600;
+  color: var(--primary-color);
 }
 
-#freqOutput {
-  font-weight: bold;
-}
-
+/* Buttons */
 button {
   margin: 12px 0;
-  padding: 12px 16px;
-  min-height: 44px;
-  background-color: var(--primary-color);
+  padding: 14px 28px;
+  min-height: 48px;
+  background: var(--primary-gradient);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
-  font-size: 16px;
-  font-weight: bold;
-  touch-action: manipulation;
+  transition: all var(--transition-normal);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 button:hover {
-  background-color: var(--primary-color-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 button:active {
-  transform: scale(0.98);
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Special Button Styles */
+#ToggleVoiceButton {
+  background: var(--success-gradient);
 }
 
 .racebuttons {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-table {
+.racebuttons button {
+  flex: 1;
+  max-width: 150px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.racebuttons button:first-child {
+  background: var(--success-gradient);
+}
+
+.racebuttons button:last-child {
+  background: var(--secondary-gradient);
+}
+
+.test-buttons {
+  display: none; /* Hidden by default, shown when debug mode is enabled */
+  gap: 8px;
+  justify-content: center;
+}
+
+.test-buttons button {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: var(--danger-gradient);
+  border: none;
+  color: white;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-normal);
+}
+
+.test-buttons button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Mobile race table - hidden by default */
+.mobile-race-table {
+  display: none;
+}
+
+.single-node-table {
+  display: none;
+}
+
+.multi-node-table {
+  display: none;
+}
+
+#mobileLapTable {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 20px;
+}
+
+#mobileLapTable th,
+#mobileLapTable td {
+  padding: 10px 8px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+#mobileLapTable th {
+  background: var(--primary-gradient);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#mobileLapTable td {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+#singleNodeLapTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+#singleNodeLapTable th,
+#singleNodeLapTable td {
+  padding: 10px 8px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+#singleNodeLapTable th {
+  background: var(--primary-gradient);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#singleNodeLapTable td {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
 }
 
 table th,
 table td {
-  padding: 6px;
+  padding: 12px;
   border: 1px solid var(--border-color);
 }
 
 table th {
-  background-color: var(--primary-color);
+  background: var(--primary-gradient);
   color: white;
-  font-weight: normal;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+table tr {
+  transition: background var(--transition-fast);
 }
 
 table tr:nth-child(even) {
-  background-color: #f2f2f2;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
-#timer {
-  font-size: 24px;
-  font-weight: bold;
-  display: block;
-  text-align: center;
+table tr:hover {
+  background-color: var(--bg-card-hover);
 }
 
-#rssiChart {
-  width: 100%;
-  height: 350px;
-  margin-top: 8px;
+/* Node Cards Container */
+.node-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-footer {
-  text-align: center;
-  padding: 16px;
-  background-color: var(--primary-color);
-  color: white;
-}
-
-@media (max-width: 768px) {
-  /* Prevent horizontal overflow */
-  body {
-    overflow-x: hidden;
-  }
-
-  main {
-    padding: 0 4px;
-  }
-
-  .tabcontent {
-    padding: 12px;
-  }
-
-  /* Larger text for readability */
-  body {
-    font-size: 16px;
-  }
-
-  nav {
-      flex-direction: column;
-  }
-
-  /* Make header more compact */
-  header {
-    padding: 12px;
-  }
-
-  .logo h1 {
-    font-size: 24px;
-    margin-left: 12px;
-  }
-
-  .nav-links {
-      margin-top: 12px;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-  }
-
-  .nav-links a {
-    padding: 12px 16px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
-
-  .nav-links li {
-      margin: 4px 0;
-  }
-
-  /* Configuration items stack vertically */
-  .config-item {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-      margin-bottom: 16px;
-  }
-
-  .config-item label {
-      flex: 0 0 auto;
-      margin-bottom: 4px;
-      font-size: 16px;
-      min-width: auto;
-  }
-
-  /* Make inputs full width and touch-friendly on mobile */
-  .config-item input[type="text"],
-  .config-item input[type="password"],
-  .config-item input[type="number"],
-  .config-item select {
-    width: 100%;
-    min-height: 48px;
-    font-size: 16px;
-    padding: 12px;
-  }
-
-  /* Number inputs - make spinner buttons larger */
-  .config-item input[type="number"] {
-    -webkit-appearance: none;
-    -moz-appearance: textfield;
-  }
-
-  .config-item input[type="number"]::-webkit-inner-spin-button,
-  .config-item input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: inner-spin-button;
-    height: 48px;
-    opacity: 1;
-  }
-
-  /* Announcer select full width on mobile */
-  #announcerSelect {
-    width: 100% !important;
-    flex: 1 1 auto;
-  }
-
-  .input-with-value {
-      flex-direction: row;
-      align-items: center;
-      gap: 12px;
-  }
-
-  .input-with-value input[type="number"] {
-    flex: 1;
-  }
-
-  .input-with-value span {
-    flex-shrink: 0;
-    font-size: 16px;
-    min-width: 60px;
-  }
-
-  .input-with-value .val {
-      text-align: left;
-      font-size: 18px;
-      font-weight: bold;
-      min-width: 50px;
-  }
-
-  /* Make buttons larger and full width */
-  button {
-    min-height: 48px;
-    padding: 14px 20px;
-    font-size: 18px;
-    width: 100%;
-    margin: 8px 0;
-  }
-
-  /* Voice control buttons - stack vertically */
-  #ToggleVoiceButton,
-  #GenerateAudioButton {
-    display: block;
-    width: 100%;
-    margin: 8px 0;
-  }
-
-  table {
-      font-size: 14px;
-  }
-
-  table th,
-  table td {
-      padding: 8px;
-  }
-
-  /* FIXED: Group node config by pilot, not by setting type */
-  .node-config-table {
-    display: block;
-  }
-
-  .node-config-table thead {
-    display: none; /* Hide the original headers on mobile */
-  }
-
-  .node-config-table tbody {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .node-config-table tbody tr {
-    display: contents;
-  }
-
-  /* Node 1 items come first (rows 1-4) */
-  .node-config-table tbody tr:nth-child(1) td:first-child { order: 1; }
-  .node-config-table tbody tr:nth-child(2) td:first-child { order: 2; }
-  .node-config-table tbody tr:nth-child(3) td:first-child { order: 3; }
-  .node-config-table tbody tr:nth-child(4) td:first-child { order: 4; }
-
-  /* Node 2 items come after (rows 5-8) */
-  .node-config-table tbody tr:nth-child(1) td:last-child { order: 5; }
-  .node-config-table tbody tr:nth-child(2) td:last-child { order: 6; }
-  .node-config-table tbody tr:nth-child(3) td:last-child { order: 7; }
-  .node-config-table tbody tr:nth-child(4) td:last-child { order: 8; }
-
-  /* Add "Node 1" header before first Node 1 setting */
-  .node-config-table tbody tr:nth-child(1) td:first-child::before {
-    content: 'Node 1';
-    display: block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 4px;
-    margin: -12px -12px 16px -12px;
-  }
-
-  /* Add "Node 2" header before first Node 2 setting */
-  .node-config-table tbody tr:nth-child(1) td:last-child {
-    margin-top: 24px;
-  }
-
-  .node-config-table tbody tr:nth-child(1) td:last-child::before {
-    content: 'Node 2';
-    display: block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 4px;
-    margin: -12px -12px 16px -12px;
-  }
-
-  .node-config-table tbody td {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--border-color);
-  }
-
-  .node-config-table label {
-    font-size: 16px;
-    margin-bottom: 8px;
-  }
-
-  .node-config-table select,
-  .node-config-table input[type="text"] {
-    width: 100%;
-    min-height: 48px;
-    padding: 12px;
-    font-size: 16px;
-  }
-
-  .node-config-table .freq-display {
-    font-size: 18px;
-    padding: 12px;
-  }
-
-  /* Stack race layout table vertically on mobile */
-  .race-layout-table thead th.pilot-header {
-      display: block;
-      width: 100%;
-      margin-bottom: 12px;
-      padding: 16px;
-  }
-
-  .pilot-header span {
-    font-size: 20px;
-  }
-
-  .race-layout-table tbody tr {
-      display: block;
-  }
-
-  .race-layout-table tbody td.lap-table-cell {
-      display: block;
-      width: 100% !important;
-      margin-bottom: 20px;
-      padding: 16px;
-  }
-
-  /* Adjust race header for mobile */
-  .race-header {
-    margin-bottom: 16px;
-  }
-
-  .race-header #timer {
-      font-size: 32px;
-      margin-bottom: 16px;
-  }
-
-  .racebuttons {
-      flex-direction: column;
-      gap: 12px;
-  }
-
-  .racebuttons button {
-      width: 100%;
-      min-height: 48px;
-  }
-
-  .node-controls {
-    gap: 12px;
-    margin-top: 12px;
-  }
-
-  .node-controls button {
-      flex: 1;
-      min-height: 48px;
-      max-width: none;
-      font-size: 16px;
-      padding: 12px;
-  }
-
-  /* Adjust calibration sections for mobile */
-  .calib-section {
-      padding: 16px;
-      margin-bottom: 20px;
-  }
-
-  .calib-section h3 {
-    font-size: 18px;
-    margin-bottom: 16px;
-  }
-
-  /* Make range sliders more touch-friendly */
-  .calib-section input[type="range"] {
-    min-height: 48px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-  }
-
-  .calib-section input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-
-  .calib-section input[type="range"]::-moz-range-thumb {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-
-  .calib-section input[type="range"]::-webkit-slider-runnable-track {
-    height: 8px;
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-
-  .calib-section input[type="range"]::-moz-range-track {
-    height: 8px;
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-
-  .calib-section .input-with-value .val {
-    font-size: 20px;
-    min-width: 60px;
-  }
-
-  #rssiChart,
-  #rssiChart2 {
-      height: 250px;
-  }
-
-  /* Improve lap times table readability */
-  .lap-times-table {
-    font-size: 15px;
-  }
-
-  .lap-times-table th {
-    font-size: 15px;
-    padding: 10px;
-  }
-
-  .lap-times-table td {
-    font-size: 15px;
-    padding: 10px;
-  }
-
-  /* Footer */
-  footer {
-    font-size: 14px;
-    padding: 16px 12px;
-  }
-
-  /* Add spacing between config sections */
-  .config-container {
-    gap: 20px;
-  }
-
-  .config-container h3 {
-    font-size: 20px;
-    margin-bottom: 16px;
-  }
-}
-
-/* Calibration Section Styling */
-.calib-section {
-  background-color: #f8f9fa;
+/* Individual Node Card */
+.node-card {
+  background: var(--bg-card);
   border: 2px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
 }
 
-.calib-section h3 {
-  margin-bottom: 12px;
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 8px;
+/* Hide Node 3 and Node 4 cards by default */
+.node-card.node-3,
+.node-card.node-4 {
+  display: none;
 }
 
-.chart-container {
-  margin-bottom: 16px;
-  width: 100%;
-  min-height: 250px;
+.node-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
-/* Calibration Canvas Styling */
-#rssiChart,
-#rssiChart2 {
-  width: 100% !important;
-  height: 250px !important;
-  max-width: 100%;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: #2a2a2a;
-  display: block;
-}
-
-/* Node Configuration Table */
-.node-config-table {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 20px auto;
-  border-collapse: collapse;
-}
-
-.node-config-table thead th {
-  background-color: var(--primary-color);
+.node-card-header {
+  background: var(--primary-gradient);
   color: white;
-  padding: 12px;
+  padding: 16px;
   text-align: center;
   font-size: 18px;
-  font-weight: bold;
-  width: 50%;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.node-config-table tbody td {
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  vertical-align: top;
-  width: 50%;
-  max-width: 450px;
+.node-card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.node-config-table label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 4px;
-  font-size: 14px;
+.node-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.node-config-table select,
-.node-config-table input[type="text"] {
+.node-field label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.node-field select,
+.node-field input[type="text"] {
   width: 100%;
-  padding: 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.node-config-table .freq-display {
-  display: block;
-  font-weight: bold;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
   font-size: 16px;
-  color: var(--primary-color);
-  padding: 8px;
-  text-align: center;
-  background-color: #f0f8ff;
-  border-radius: 4px;
+  font-weight: 500;
+  transition: all var(--transition-normal);
 }
 
-/* Race Tab Layout */
+.node-field select:hover,
+.node-field input[type="text"]:hover {
+  border-color: var(--border-accent);
+}
+
+.node-field select:focus,
+.node-field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.node-field .freq-display {
+  background: var(--bg-input);
+  border: 2px solid var(--border-accent);
+  color: var(--accent-color);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* Old table styles - removed, using card layout now */
+
+/* Race Tab */
 .race-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .race-header #timer {
-  font-size: 32px;
-  font-weight: bold;
+  font-size: 48px;
+  font-weight: 800;
   display: block;
-  margin-bottom: 12px;
-  color: var(--primary-color);
+  margin-bottom: 20px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
 }
 
 .race-layout-table {
   width: 100%;
-  max-width: 1200px;
-  margin: 16px auto 0 auto;
-  border-collapse: collapse;
+  max-width: 1600px;
+  margin: 24px auto 0 auto;
+  table-layout: fixed;
 }
 
 .race-layout-table thead th.pilot-header {
-  background-color: var(--primary-color);
+  background: var(--primary-gradient);
   color: white;
-  padding: 16px;
+  padding: 20px;
   text-align: center;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   border: 2px solid var(--border-color);
 }
 
 .pilot-header span {
   display: block;
-  margin-bottom: 8px;
   font-size: 20px;
-}
-
-.node-controls {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 8px;
-}
-
-.node-controls button {
-  flex: 1;
-  max-width: 100px;
-  margin: 0;
-  padding: 6px 12px;
-  font-size: 14px;
+  letter-spacing: 0.5px;
 }
 
 .race-layout-table tbody td.lap-table-cell {
-  padding: 12px;
+  padding: 20px;
   border: 2px solid var(--border-color);
   vertical-align: top;
-  width: 50%;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .lap-times-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .lap-times-table th {
-  background-color: var(--secondary-color);
+  background: var(--secondary-gradient);
   color: white;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid var(--border-color);
   text-align: center;
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .lap-times-table td {
-  padding: 8px;
+  padding: 10px;
   border: 1px solid var(--border-color);
   text-align: center;
   font-size: 14px;
+  color: var(--text-secondary);
 }
 
 .lap-times-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .lap-times-table tr:hover {
-  background-color: #e8f4f8;
+  background-color: var(--bg-card-hover);
 }
 
-/* Node 3 and 4 visibility - hidden by default, shown via JavaScript */
-.node-3,
-.node-4 {
+/* Calibration Section */
+.calib-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 32px;
+  transition: all var(--transition-normal);
+}
+
+.calib-section:hover {
+  border-color: var(--border-accent);
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.15);
+}
+
+.calib-section h3 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-accent);
+}
+
+.calib-section .config-item {
+  margin-bottom: 24px;
+}
+
+.calib-section .config-item label {
+  min-width: 140px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.calib-section .input-with-value {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
+}
+
+.calib-section .input-with-value input[type="number"] {
+  width: 100px;
+  min-width: 100px;
+  flex-shrink: 0;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  transition: all var(--transition-normal);
+}
+
+.calib-section .input-with-value input[type="number"]:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+}
+
+.calib-section .input-with-value input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.chart-container {
+  margin-bottom: 20px;
+  width: 100%;
+  min-height: 250px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+#rssiChart,
+#rssiChart2,
+#rssiChart3,
+#rssiChart4 {
+  width: 100% !important;
+  height: 250px !important;
+  max-width: 100%;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: #1a1a2e;
+  display: block;
+}
+
+/* Range Sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-color);
+  outline: none;
+  transition: all var(--transition-normal);
+}
+
+input[type="range"]:hover {
+  background: var(--border-accent);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: var(--shadow-md);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  cursor: pointer;
+  border: none;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: var(--shadow-md);
+}
+
+/* Node 3 and 4 visibility */
+/* Don't hide node-card elements - they're controlled by JS */
+.node-3:not(.node-card),
+.node-4:not(.node-card) {
   display: none !important;
 }
 
-/* When nodes are visible, ensure they display properly */
-.node-3.visible,
-.node-4.visible {
+.node-3.visible:not(.node-card),
+.node-4.visible:not(.node-card) {
   display: table-cell !important;
 }
 
-/* For calib sections - block display */
 .calib-section.node-3.visible,
 .calib-section.node-4.visible {
   display: block !important;
 }
 
-/* Config table layout */
-.node-config-table {
-  width: 100%;
-  table-layout: fixed; /* Equal column distribution */
+/* Footer */
+footer {
+  text-align: center;
+  padding: 24px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-top: 2px solid var(--border-accent);
+  margin-top: 32px;
+  font-size: 14px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Race table adjustments */
-.race-layout-table {
-  max-width: 1600px;
-  width: 100%;
-  table-layout: fixed; /* Equal column distribution */
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-/* Calibration sections - full width when visible */
-.calib-section {
-  width: 100%;
-  margin-bottom: 24px;
+.footer-controls {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.theme-selector,
+.debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-selector label,
+.debug-toggle label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.theme-selector select {
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.theme-selector select:hover {
+  border-color: var(--border-accent);
+}
+
+.theme-selector select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.debug-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+footer p {
+  margin: 0;
+}
+
+footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color var(--transition-fast);
+}
+
+footer a:hover {
+  color: var(--accent-color);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+
+  header {
+    padding: 16px 16px 8px 16px;
+  }
+
+  nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo h1 {
+    font-size: 24px;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .nav-links a {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  main {
+    padding: 16px 12px;
+  }
+
+  .tabcontent {
+    padding: 20px;
+  }
+
+  /* Configuration items stack */
+  .config-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .config-item label {
+    min-width: auto;
+    font-size: 13px;
+  }
+
+  .config-item input[type="text"],
+  .config-item input[type="password"],
+  .config-item input[type="number"],
+  .config-item select {
+    width: 100%;
+    max-width: none;
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  #announcerSelect {
+    width: 100% !important;
+  }
+
+  button {
+    width: 100%;
+    min-height: 52px;
+    font-size: 16px;
+  }
+
+  /* Node cards - mobile friendly */
+  .node-cards-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .node-card {
+    max-width: 100%;
+  }
+
+  .node-card-header {
+    font-size: 16px;
+    padding: 14px;
+  }
+
+  .node-card-body {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .node-field select,
+  .node-field input[type="text"] {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  /* Old node config table - hidden on mobile (using cards instead) */
+  .node-config-table {
+    display: none !important;
+  }
+
+  /* Race tab mobile */
+  .race-header #timer {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+
+  .racebuttons {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .racebuttons button {
+    max-width: none;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .test-buttons button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  /* Hide desktop race table on mobile */
+  .desktop-race-table {
+    display: none !important;
+  }
+
+  /* Show mobile race table */
+  .mobile-race-table {
+    display: block !important;
+  }
+  
+  /* Show single node table by default, hide multi-node */
+  .single-node-table {
+    display: block;
+  }
+  
+  .multi-node-table {
+    display: none;
+  }
+
+  #mobileLapTable th,
+  #mobileLapTable td {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
+  
+  #singleNodeLapTable th,
+  #singleNodeLapTable td {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
+
+  /* Calibration mobile */
+  .calib-section {
+    padding: 16px;
+  }
+
+  .calib-section h3 {
+    font-size: 18px;
+  }
+
+  #rssiChart,
+  #rssiChart2,
+  #rssiChart3,
+  #rssiChart4 {
+    height: 200px !important;
+  }
+
+  /* Touch-friendly sliders */
+  input[type="range"]::-webkit-slider-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  footer {
+    padding: 20px;
+    font-size: 13px;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-card);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-gradient);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-gradient);
+}
+
+/* Selection Styling */
+::selection {
+  background: rgba(20, 184, 166, 0.3);
+  color: white;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
