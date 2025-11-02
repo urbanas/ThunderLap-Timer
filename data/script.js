@@ -150,27 +150,6 @@ function loadSavedTheme() {
   }
 }
 
-// Toggle debug mode
-function toggleDebugMode(enabled) {
-  const testButtons = document.querySelector('.test-buttons');
-  if (testButtons) {
-    testButtons.style.display = enabled ? 'flex' : 'none';
-  }
-  
-  // Save preference to localStorage
-  localStorage.setItem('debugMode', enabled ? 'true' : 'false');
-}
-
-// Load saved debug mode on page load
-function loadSavedDebugMode() {
-  const savedDebugMode = localStorage.getItem('debugMode') === 'true';
-  const debugToggle = document.getElementById('debugToggle');
-  if (debugToggle) {
-    debugToggle.checked = savedDebugMode;
-    toggleDebugMode(savedDebugMode);
-  }
-}
-
 // Frequency lookup table for all bands
 const freqLookup = [
   [5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725], // Band A
@@ -338,7 +317,6 @@ onload = function (e) {
   
   // Load saved theme
   loadSavedTheme();
-  loadSavedDebugMode();
   
   commonElements.config.style.display = "block";
   commonElements.race.style.display = "none";
@@ -666,7 +644,7 @@ function updateRssiCharts() {
         node.rssiSeries.append(now, node.rssiValue);
         if (node.crossing) {
           node.rssiCrossingSeries.append(now, 256);
-        } else {
+    } else {
           node.rssiCrossingSeries.append(now, -10);
         }
       }
@@ -754,17 +732,17 @@ function openTab(evt, tabName) {
   for (let i = 0; i < tabcontent.length; i++) {
     tabcontent[i].style.display = "none";
   }
-  
+
   // Remove active class from all tabs
   const tablinks = document.getElementsByClassName("tablinks");
   for (let i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active", "");
   }
-  
+
   // Show current tab and mark as active
   document.getElementById(tabName).style.display = "block";
   evt.currentTarget.className += " active";
-  
+
   // Handle RSSI streaming for calibration tab
   if (tabName === "calib") {
     // Create charts for all active nodes when opening calibration tab
@@ -796,17 +774,17 @@ function openTab(evt, tabName) {
     }, 250); // Increased delay
     
     if (!rssiSending) {
-      fetch("/timer/rssiStart", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
+    fetch("/timer/rssiStart", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (response.ok) rssiSending = true;
+        return response.json();
       })
-        .then((response) => {
-          if (response.ok) rssiSending = true;
-          return response.json();
-        })
         .catch((error) => console.error("Error starting RSSI:", error));
     }
   } else if (rssiSending) {
@@ -1098,23 +1076,23 @@ function addLap(lapStr, nodeId = 1) {
   
   node.lapNo += 1;
   const table = node.lapTable;
-  const row = table.insertRow();
-  const cell1 = row.insertCell(0);
-  const cell2 = row.insertCell(1);
-  const cell3 = row.insertCell(2);
+    const row = table.insertRow();
+    const cell1 = row.insertCell(0);
+    const cell2 = row.insertCell(1);
+    const cell3 = row.insertCell(2);
   
   cell1.innerHTML = node.lapNo;
-  cell2.innerHTML = lapStr + "s";
+      cell2.innerHTML = lapStr + "s";
   
-  // Calculate 2-lap time for announcer (not displayed in table)
+    // Calculate 2-lap time for announcer (not displayed in table)
   if (node.lapTimes.length >= 2 && node.lapNo != 0) {
     last2lapStr = (newLap + node.lapTimes[node.lapTimes.length - 1]).toFixed(2);
-  }
+    }
   
-  // Calculate and display 3-lap time
+    // Calculate and display 3-lap time
   if (node.lapTimes.length >= 3 && node.lapNo != 0) {
     last3lapStr = (newLap + node.lapTimes[node.lapTimes.length - 2] + node.lapTimes[node.lapTimes.length - 1]).toFixed(2);
-    cell3.innerHTML = last3lapStr + "s";
+      cell3.innerHTML = last3lapStr + "s";
   }
   
   node.lapTimes.push(newLap);
@@ -1187,18 +1165,6 @@ function clearLaps() {
       singleNodeTable.deleteRow(tableHeaderRowCount);
     }
   }
-}
-
-// Add test lap for debugging
-function addTestLap(nodeId) {
-  const node = nodes[nodeId];
-  const randomTime = (Math.random() * 20 + 10).toFixed(2); // Random time between 10-30 seconds
-  
-  // Add to desktop table (addLap expects lapStr first, then nodeId)
-  addLap(randomTime, nodeId);
-  
-  // Update mobile table
-  updateMobileLapTable();
 }
 
 // Update the mobile lap table with all laps
@@ -1333,18 +1299,18 @@ async function startRace(node = 0) {
     if (raceStartDelay > 0) {
       // Check if voice is enabled
       if (audioEnabled) {
-        // Calculate time taken to say starting phrase
-        const baseWordsPerMinute = 150;
-        let baseWordsPerSecond = baseWordsPerMinute / 60;
-        let wordsPerSecond = baseWordsPerSecond * announcerRate;
+      // Calculate time taken to say starting phrase
+      const baseWordsPerMinute = 150;
+      let baseWordsPerSecond = baseWordsPerMinute / 60;
+      let wordsPerSecond = baseWordsPerSecond * announcerRate;
         
-        // 3 words in "Arm your quad"
-        let timeToSpeak1 = 3 / wordsPerSecond * 1000; 
-        queueSpeak("<p>Arm your quad</p>");
-        await new Promise((r) => setTimeout(r, timeToSpeak1));
+      // 3 words in "Arm your quad"
+      let timeToSpeak1 = 3 / wordsPerSecond * 1000; 
+      queueSpeak("<p>Arm your quad</p>");
+      await new Promise((r) => setTimeout(r, timeToSpeak1));
         
         // 8 words in "Starting on the tone in [delay] seconds"
-        let timeToSpeak2 = 8 / wordsPerSecond * 1000; 
+      let timeToSpeak2 = 8 / wordsPerSecond * 1000; 
         queueSpeak(`<p>Starting on the tone in ${raceStartDelay.toFixed(1)} seconds</p>`);
         await new Promise((r) => setTimeout(r, timeToSpeak2));
       }
@@ -1404,7 +1370,7 @@ function stopRace(node = 0) {
 
 // Event source for server-sent events
 function setupEventSource() {
-  if (!!window.EventSource) {
+if (!!window.EventSource) {
     const source = new EventSource("/events");
 
     source.addEventListener("open", function (e) {
