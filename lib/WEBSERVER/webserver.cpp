@@ -10,9 +10,9 @@
 
 // Network constants
 static const uint8_t DNS_PORT = 53;
-static const char *WIFI_HOSTNAME = "plt";
-static const char *WIFI_AP_SSID_PREFIX = "PhobosLT";
-static const char *WIFI_AP_PASSWORD = "phoboslt";
+static const char *WIFI_HOSTNAME = "thunderlap";
+static const char *WIFI_AP_SSID_PREFIX = "ThunderLap";
+static const char *WIFI_AP_PASSWORD = "thunderlap";
 static const char *WIFI_AP_ADDRESS = "20.0.0.1";
 
 void Webserver::init(Config *config, LapTimer *lapTimer1, LapTimer *lapTimer2, LapTimer *lapTimer3, LapTimer *lapTimer4, BatteryMonitor *batMonitor, Buzzer *buzzer, Led *l) {
