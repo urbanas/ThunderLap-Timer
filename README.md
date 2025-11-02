@@ -1,16 +1,27 @@
 # PhobosLT MultiNode
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/paypalme/Robertasurbanas)
 
 **Multi-Node FPV Race Timing Solution - Supporting up to 4 simultaneous pilots**
 
-> This project is a fork of the original [PhobosLT](https://github.com/phobos-/PhobosLT) by phobos-, extended to support multiple nodes for multi-pilot racing.
+---
+
+## 💖 Support This Project
+
+If you enjoy using PhobosLT MultiNode and find it useful for your FPV racing, consider buying me a coffee or supporting future development! Your donations help keep this project alive and fuel new features.
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.com/paypalme/Robertasurbanas)
+
+**Every contribution is appreciated!** 🙏
+
+> **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been heavily modified to support up to 4 pilots simultaneously. The codebase has undergone extensive development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, and numerous feature additions. While approximately 30-40% of the original code is reused (core timing algorithms, RX5808 communication), this multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
 
 ---
 
 ## 📋 Table of Contents
 - [About](#about)
 - [Features](#features)
+- [Quick Start (ESP32-WROOM-32)](#quick-start-esp32-wroom-32)
 - [Hardware Requirements](#hardware-requirements)
 - [Pin Configuration](#pin-configuration)
 - [Firmware Installation](#firmware-installation)
@@ -23,9 +34,14 @@
 
 ## About
 
-PhobosLT MultiNode is an advanced lap timing solution for 5.8GHz FPV racing that supports **up to 4 simultaneous pilots**. Built on ESP32 microcontrollers and RX5808 modules, it provides real-time lap timing with a modern, mobile-responsive web interface.
+PhobosLT MultiNode is an advanced lap timing solution for 5.8GHz FPV racing that supports **up to 4 simultaneous pilots**. Built on the affordable and widely-available **ESP32-WROOM-32** microcontroller and RX5808 modules, it provides real-time lap timing with a modern, mobile-responsive web interface.
 
 The system is completely self-contained - it creates its own WiFi access point and serves a web application that works on any device with a browser (phone, tablet, or laptop). No additional apps or software needed!
+
+### Key Hardware
+- **ESP32-WROOM-32** (ESP32 DevKit) - The standard ESP32 board, affordable (~$5-10) and available worldwide
+- **RX5808 Modules** - One per pilot, with simple SPI modification
+- **Total Cost** - ~$25-40 for a complete 4-pilot system
 
 ### How It Works
 
@@ -66,7 +82,6 @@ Each node (RX5808 module) monitors RSSI (Received Signal Strength Indicator) for
   - **Configuration** - Set up pilots, frequencies, and system settings
   - **Race** - Start/stop timing and view live lap results
   - **Calibration** - Tune RSSI thresholds with real-time graphs
-- ✅ **Debug Mode** - Built-in test lap generator for UI testing
 - ✅ **Persistent Settings** - All configurations saved to EEPROM
 
 ### Mobile Optimizations
@@ -78,12 +93,48 @@ Each node (RX5808 module) monitors RSSI (Received Signal Strength Indicator) for
 
 ---
 
+## Quick Start (ESP32-WROOM-32)
+
+For users with an **ESP32-WROOM-32** board, here's the fastest path to get racing:
+
+1. **Get Hardware**
+   - 1x ESP32-WROOM-32 (ESP32 DevKit) board
+   - 1-4x RX5808 modules with [SPI mod](https://sheaivey.github.io/rx5808-pro-diversity/docs/rx5808-spi-mod.html)
+   - 1x Active buzzer (optional but recommended)
+   - USB cable for power and programming
+
+2. **Wire It Up** (for Node 1)
+   - RX5808 RSSI → GPIO33
+   - RX5808 DATA → GPIO19
+   - RX5808 SELECT → GPIO22
+   - RX5808 CLOCK → GPIO23
+   - RX5808 VCC → 3.3V (⚠️ not 5V!)
+   - Buzzer → GPIO27
+   - All grounds → GND
+
+3. **Flash Firmware**
+   - Clone this repo in VSCode with PlatformIO
+   - Select `PhobosLT` target (default)
+   - Build and upload firmware
+   - Upload filesystem image
+
+4. **Connect & Configure**
+   - Connect to WiFi: `PhobosLT_XXXX` (password: `phoboslt`)
+   - Open browser to `20.0.0.1`
+   - Set your band/channel in Configuration tab
+   - Calibrate RSSI thresholds
+   - Start racing!
+
+**Full details in sections below** ⬇️
+
+---
+
 ## Hardware Requirements
 
 ### Core Components (Per Node)
 - **ESP32 Board** with USB (one board can handle all 4 nodes)
-  - Recommended: LilyGo T-Energy (built-in battery management)
-  - Also supported: T-Cell, ESP32-C3, ESP32-S3, ESP32 DevKit
+  - Recommended: **ESP32-WROOM-32** (ESP32 DevKit) - Most common and affordable
+  - Also supported: LilyGo T-Energy, T-Cell, ESP32-C3, ESP32-S3
 - **RX5808 Module** with [SPI mod](https://sheaivey.github.io/rx5808-pro-diversity/docs/rx5808-spi-mod.html)
 - **Power Supply** - Battery, powerbank, or USB power
   - Single ESP32 can power up to 4 RX5808 modules
@@ -91,70 +142,103 @@ Each node (RX5808 module) monitors RSSI (Received Signal Strength Indicator) for
 ### Optional Components
 - **LED** - Visual feedback (any color + appropriate resistor)
 - **Active Buzzer** - 3.3V-5V with built-in generator
-- **Battery** - 1S Li-Ion (for portable operation)
+- **Battery** - For portable operation (e.g., 1S Li-Ion for T-Energy)
 
 ### Building Multi-Node Setup
 For a complete 4-node system, you need:
-- 1x ESP32 board (any supported variant)
+- 1x ESP32-WROOM-32 board (or any supported variant)
 - 4x RX5808 modules (SPI modded)
-- 1x Power supply
+- 1x Power supply (USB or battery)
 - 1x Optional buzzer
 - 1x Optional LED
 
-**Cost Estimate:** ~$30-50 USD for a complete 4-node system
+**Cost Estimate:** ~$25-40 USD for a complete 4-node system
 
 ---
 
 ## Pin Configuration
 
-### Default Pinout (ESP32-C3)
+### Default Pinout (ESP32-WROOM-32)
+
+This is the pinout for the standard **ESP32-WROOM-32** (ESP32 DevKit) board - the most common and affordable ESP32 variant.
 
 **Node 1:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
-| GPIO2     | RSSI       | Analog RSSI input |
-| GPIO6     | DATA       | SPI Data (shared) |
-| GPIO5     | SELECT     | Chip Select |
-| GPIO4     | CLOCK      | SPI Clock (shared) |
+| GPIO33    | RSSI       | Analog RSSI input |
+| GPIO19    | DATA       | SPI Data (shared) |
+| GPIO22    | SELECT     | Chip Select |
+| GPIO23    | CLOCK      | SPI Clock (shared) |
 | 3.3V      | VCC (+5V)  | Power (undervolted) |
 | GND       | GND        | Ground |
 
 **Node 2:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
-| GPIO3     | RSSI       | Analog RSSI input |
-| GPIO6     | DATA       | SPI Data (shared) |
-| GPIO10    | SELECT     | Chip Select |
-| GPIO4     | CLOCK      | SPI Clock (shared) |
+| GPIO32    | RSSI       | Analog RSSI input |
+| GPIO25    | DATA       | SPI Data |
+| GPIO26    | SELECT     | Chip Select |
+| GPIO14    | CLOCK      | SPI Clock |
 
 **Node 3:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
-| GPIO20    | RSSI       | Analog RSSI input |
-| GPIO6     | DATA       | SPI Data (shared) |
-| GPIO21    | SELECT     | Chip Select |
-| GPIO4     | CLOCK      | SPI Clock (shared) |
+| GPIO34    | RSSI       | Analog RSSI input |
+| GPIO19    | DATA       | SPI Data (shared with Node 1) |
+| GPIO18    | SELECT     | Chip Select |
+| GPIO23    | CLOCK      | SPI Clock (shared with Node 1) |
 
 **Node 4:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
-| GPIO19    | RSSI       | Analog RSSI input |
-| GPIO6     | DATA       | SPI Data (shared) |
-| GPIO18    | SELECT     | Chip Select |
-| GPIO4     | CLOCK      | SPI Clock (shared) |
+| GPIO36    | RSSI       | Analog RSSI input |
+| GPIO19    | DATA       | SPI Data (shared with Nodes 1 & 3) |
+| GPIO17    | SELECT     | Chip Select |
+| GPIO23    | CLOCK      | SPI Clock (shared with Nodes 1 & 3) |
 
 **Peripherals:**
 | ESP32 Pin | Peripheral | Notes |
 |-----------|------------|-------|
-| GPIO9     | LED        | Connect to anode (+) via resistor |
-| GPIO7     | Buzzer     | Active buzzer (3.3V-5V) |
-| GPIO0     | VBAT       | Battery voltage (via 1/2 divider) |
+| GPIO21    | LED        | Connect to anode (+) via resistor (~220Ω) |
+| GPIO27    | Buzzer     | Active buzzer (3.3V-5V) |
+| GPIO35    | VBAT       | Battery voltage (via 1/2 divider, max 3.3V) |
 
 ### Important Notes
-- **RX5808 Power**: Connect RX5808's +5V pin to **3.3V** (undervolt for better RSSI resolution)
-- **Shared Pins**: DATA and CLOCK are shared across all nodes
-- **Unique Pins**: Each node needs its own RSSI and SELECT pins
-- **Other ESP32 Variants**: See `lib/CONFIG/config.h` for ESP32-S3, DevKit, and other pinouts
+- **RX5808 Power**: Connect RX5808's +5V pin to **3.3V** (undervolt for better RSSI resolution and cooling)
+- **Shared Pins**: 
+  - Nodes 1 & 3 share DATA (GPIO19) and CLOCK (GPIO23)
+  - Node 2 has independent DATA/CLOCK
+  - Node 4 shares DATA/CLOCK with Nodes 1 & 3
+- **Unique Pins**: Each node MUST have its own RSSI and SELECT pins
+- **Input-Only Pins**: GPIO34, GPIO35, GPIO36 are input-only (perfect for RSSI reading)
+
+### Other ESP32 Variants
+For ESP32-C3, ESP32-S3, and other boards, see the pin definitions in `lib/CONFIG/config.h`.
+
+### Wiring Example (Single Node)
+
+For a basic single-node setup with ESP32-WROOM-32:
+
+```
+RX5808 Module          ESP32-WROOM-32
+┌─────────────┐        ┌──────────────┐
+│ RSSI        │───────▶│ GPIO33       │
+│ DATA        │───────▶│ GPIO19       │
+│ SELECT      │───────▶│ GPIO22       │
+│ CLOCK       │───────▶│ GPIO23       │
+│ +5V (VCC)   │───────▶│ 3.3V         │ ⚠️ Important: Use 3.3V!
+│ GND         │───────▶│ GND          │
+└─────────────┘        └──────────────┘
+
+Optional Peripherals:
+LED (+ resistor) ─────▶ GPIO21 ─┐
+                                 │
+Active Buzzer ────────▶ GPIO27 ─┤
+                                 │
+                        GND ◀────┘
+```
+
+**Multi-Node Setup:** Simply connect additional RX5808 modules following the pin tables above. Nodes 1 & 3 share DATA/CLOCK lines, so you can connect them in parallel.
 
 ---
 
@@ -177,11 +261,19 @@ cd PhobosLT-MultiNode
 ```
 
 ### Select Target Hardware
-Open `platformio.ini` and set your target:
+The default configuration is set for **ESP32-WROOM-32** (ESP32 DevKit), which should work for most users. If you're using a different board, open `platformio.ini` and change the target:
+
 ```ini
 [platformio]
-default_envs = PhobosLT  ; Options: PhobosLT, ESP32C3, ESP32S3, LicardoTimer
+default_envs = PhobosLT  ; Default: ESP32-WROOM-32 (esp32dev)
+                          ; Other options: ESP32C3, ESP32S3, LicardoTimer
 ```
+
+**Available Targets:**
+- `PhobosLT` - ESP32-WROOM-32 / ESP32 DevKit (default, recommended)
+- `ESP32C3` - ESP32-C3 variant
+- `ESP32S3` - ESP32-S3 variant  
+- `LicardoTimer` - Custom hardware variant
 
 ### Build & Flash
 
@@ -257,10 +349,6 @@ default_envs = PhobosLT  ; Options: PhobosLT, ESP32C3, ESP32S3, LicardoTimer
 - **Stop** - Stop accepting new laps
 - **Reset** - Clear all lap times
 
-**Debug Mode** (footer toggle):
-- Enables T1-T4 test buttons for adding random lap times
-- Useful for testing UI without flying
-
 ### Calibration Tab
 
 **For Each Active Node:**
@@ -285,10 +373,6 @@ default_envs = PhobosLT  ; Options: PhobosLT, ESP32C3, ESP32S3, LicardoTimer
 - Cyber Cyan
 - Sunset Orange
 - Matrix Green
-- Saved to browser localStorage
-
-**Debug Toggle:**
-- Show/hide test lap buttons on Race tab
 - Saved to browser localStorage
 
 ---
@@ -396,7 +480,7 @@ Exit RSSI: 132 - 10 = 122
 
 **Mobile Racing:**
 - Portrait orientation recommended
-- Theme selector and debug mode in footer
+- Theme selector in footer
 - Simplified race table for multi-pilot view
 - All features fully functional
 
@@ -465,10 +549,23 @@ Pull requests welcome! Areas for contribution:
 
 ## Credits
 
-- **Original PhobosLT** by [phobos-](https://github.com/phobos-/PhobosLT)
-- **RotorHazard** for timing algorithms and inspiration
-- **ExpressLRS** for codebase patterns
-- **Community Contributors** for testing and feedback
+- **Original PhobosLT** by [DavHau](https://github.com/DavHau/PhobosLT) - Foundation for this multi-node implementation
+- **RotorHazard** for timing algorithms and RSSI-based lap detection concepts
+- **ExpressLRS** for embedded development patterns and build system inspiration
+- **Community Contributors** for testing, feedback, and feature suggestions
+
+### What's Different in MultiNode?
+
+This fork extends the original PhobosLT with:
+- ✅ **4-Node Support** - Simultaneously time up to 4 pilots
+- ✅ **Modern UI** - Complete redesign with 5 theme options
+- ✅ **Mobile Optimization** - Touch-friendly controls, responsive tables, card-based layouts
+- ✅ **Enhanced Calibration** - Precision number inputs, dynamic RSSI scaling
+- ✅ **Persistent Preferences** - Theme settings saved locally
+- ✅ **Race Management** - Simplified controls, hole shot detection, multi-node lap tables
+- ✅ **Architecture Improvements** - Refactored codebase, improved memory management, expanded API
+
+**Code Retention:** ~30-40% of original PhobosLT code remains (core timing logic, RX5808 SPI communication, Kalman filtering, battery monitoring)
 
 ---
 
