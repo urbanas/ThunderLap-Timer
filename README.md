@@ -4,16 +4,6 @@
 
 **Multi-Node FPV Race Timing Solution - Supporting up to 4 simultaneous pilots**
 
----
-
-## 💖 Support This Project
-
-If you enjoy using PhobosLT MultiNode and find it useful for your FPV racing, consider buying me a coffee or supporting future development! Your donations help keep this project alive and fuel new features.
-
-[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.com/paypalme/Robertasurbanas)
-
-**Every contribution is appreciated!** 🙏
-
 > **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been heavily modified to support up to 4 pilots simultaneously. The codebase has undergone extensive development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, and numerous feature additions. While approximately 30-40% of the original code is reused (core timing algorithms, RX5808 communication), this multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
 
 ---
@@ -253,10 +243,10 @@ Active Buzzer ────────▶ GPIO27 ─┤
 ```bash
 # Via VSCode Command Palette (Cmd+Shift+P / Ctrl+Shift+P)
 Git: Clone
-# Enter: https://github.com/YOUR_USERNAME/PhobosLT-MultiNode.git
+# Enter: https://github.com/urbanas/PhobosLT-MultiNode.git
 
 # Or via terminal
-git clone https://github.com/YOUR_USERNAME/PhobosLT-MultiNode.git
+git clone https://github.com/urbanas/PhobosLT-MultiNode.git
 cd PhobosLT-MultiNode
 ```
 
