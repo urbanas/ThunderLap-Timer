@@ -243,10 +243,10 @@ Active Buzzer ────────▶ GPIO27 ─┤
 ```bash
 # Via VSCode Command Palette (Cmd+Shift+P / Ctrl+Shift+P)
 Git: Clone
-# Enter: https://github.com/YOUR_USERNAME/PhobosLT-MultiNode.git
+# Enter: https://github.com/urbanas/PhobosLT-MultiNode.git
 
 # Or via terminal
-git clone https://github.com/YOUR_USERNAME/PhobosLT-MultiNode.git
+git clone https://github.com/urbanas/PhobosLT-MultiNode.git
 cd PhobosLT-MultiNode
 ```
 
