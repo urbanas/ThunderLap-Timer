@@ -94,11 +94,12 @@ For users with an **ESP32-WROOM-32** board, here's the fastest path to get racin
    - USB cable for power and programming
 
 2. **Wire It Up** (for Node 1)
+   - RX5808 GND → ESP32 GND
    - RX5808 RSSI → GPIO33
-   - RX5808 DATA → GPIO19
-   - RX5808 SELECT → GPIO22
-   - RX5808 CLOCK → GPIO23
-   - RX5808 VCC → 3.3V (⚠️ not 5V!)
+   - RX5808 +5V → 3.3V (⚠️ not 5V!)
+   - RX5808 CH3 (CLOCK) → GPIO23
+   - RX5808 CH2 (SELECT) → GPIO22
+   - RX5808 CH1 (DATA) → GPIO19
    - Buzzer → GPIO27
    - All grounds → GND
 
@@ -148,6 +149,29 @@ For a complete 4-node system, you need:
 
 ## Pin Configuration
 
+### RX5808 Module Pinout
+
+The RX5808 modules typically have the following pins:
+```
+RX5808 Pin Layout (left to right):
+┌─────────────────────────────────────────────────────────┐
+│ GND | Video | A6.5W | RSSI | +5V | GND | CH3 | CH2 | CH1 │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Pin Functions:**
+- **GND** - Ground (connect to ESP32 GND)
+- **Video** - Video output (not used for lap timing)
+- **A6.5W** - Audio 6.5MHz (not used)
+- **RSSI** - Analog RSSI signal (connect to ESP32 analog input)
+- **+5V** - Power input ⚠️ **Connect to 3.3V** (undervolt for better RSSI resolution)
+- **GND** - Ground (duplicate, can be left unconnected if first GND is used)
+- **CH3** - SPI CLOCK (shared across nodes)
+- **CH2** - SPI SELECT (unique per node)
+- **CH1** - SPI DATA (shared across nodes)
+
+**Important:** The RX5808 must have the [SPI modification](https://sheaivey.github.io/rx5808-pro-diversity/docs/rx5808-spi-mod.html) completed to enable digital control of frequency via CH1, CH2, CH3 pins.
+
 ### Default Pinout (ESP32-WROOM-32)
 
 This is the pinout for the standard **ESP32-WROOM-32** (ESP32 DevKit) board - the most common and affordable ESP32 variant.
@@ -156,35 +180,35 @@ This is the pinout for the standard **ESP32-WROOM-32** (ESP32 DevKit) board - th
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
 | GPIO33    | RSSI       | Analog RSSI input |
-| GPIO19    | DATA       | SPI Data (shared) |
-| GPIO22    | SELECT     | Chip Select |
-| GPIO23    | CLOCK      | SPI Clock (shared) |
-| 3.3V      | VCC (+5V)  | Power (undervolted) |
+| GPIO19    | CH1        | SPI Data (shared) |
+| GPIO22    | CH2        | SPI Select (Chip Select) |
+| GPIO23    | CH3        | SPI Clock (shared) |
+| 3.3V      | +5V        | Power (undervolted) |
 | GND       | GND        | Ground |
 
 **Node 2:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
 | GPIO32    | RSSI       | Analog RSSI input |
-| GPIO25    | DATA       | SPI Data |
-| GPIO26    | SELECT     | Chip Select |
-| GPIO14    | CLOCK      | SPI Clock |
+| GPIO25    | CH1        | SPI Data |
+| GPIO26    | CH2        | SPI Select (Chip Select) |
+| GPIO14    | CH3        | SPI Clock |
 
 **Node 3:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
 | GPIO34    | RSSI       | Analog RSSI input |
-| GPIO19    | DATA       | SPI Data (shared with Node 1) |
-| GPIO18    | SELECT     | Chip Select |
-| GPIO23    | CLOCK      | SPI Clock (shared with Node 1) |
+| GPIO19    | CH1        | SPI Data (shared with Node 1) |
+| GPIO18    | CH2        | SPI Select (Chip Select) |
+| GPIO23    | CH3        | SPI Clock (shared with Node 1) |
 
 **Node 4:**
 | ESP32 Pin | RX5808 Pin | Function |
 |-----------|------------|----------|
 | GPIO36    | RSSI       | Analog RSSI input |
-| GPIO19    | DATA       | SPI Data (shared with Nodes 1 & 3) |
-| GPIO17    | SELECT     | Chip Select |
-| GPIO23    | CLOCK      | SPI Clock (shared with Nodes 1 & 3) |
+| GPIO19    | CH1        | SPI Data (shared with Nodes 1 & 3) |
+| GPIO17    | CH2        | SPI Select (Chip Select) |
+| GPIO23    | CH3        | SPI Clock (shared with Nodes 1 & 3) |
 
 **Peripherals:**
 | ESP32 Pin | Peripheral | Notes |
@@ -196,11 +220,12 @@ This is the pinout for the standard **ESP32-WROOM-32** (ESP32 DevKit) board - th
 ### Important Notes
 - **RX5808 Power**: Connect RX5808's +5V pin to **3.3V** (undervolt for better RSSI resolution and cooling)
 - **Shared Pins**: 
-  - Nodes 1 & 3 share DATA (GPIO19) and CLOCK (GPIO23)
-  - Node 2 has independent DATA/CLOCK
-  - Node 4 shares DATA/CLOCK with Nodes 1 & 3
-- **Unique Pins**: Each node MUST have its own RSSI and SELECT pins
+  - Nodes 1 & 3 share CH1 (Data - GPIO19) and CH3 (Clock - GPIO23)
+  - Node 2 has independent CH1/CH3
+  - Node 4 shares CH1/CH3 with Nodes 1 & 3
+- **Unique Pins**: Each node MUST have its own RSSI and CH2 (Select) pins
 - **Input-Only Pins**: GPIO34, GPIO35, GPIO36 are input-only (perfect for RSSI reading)
+- **Pin Labels**: CH1 = Data, CH2 = Select, CH3 = Clock (SPI communication)
 
 ### Other ESP32 Variants
 For ESP32-C3, ESP32-S3, and other boards, see the pin definitions in `lib/CONFIG/config.h`.
@@ -210,15 +235,18 @@ For ESP32-C3, ESP32-S3, and other boards, see the pin definitions in `lib/CONFIG
 For a basic single-node setup with ESP32-WROOM-32:
 
 ```
-RX5808 Module          ESP32-WROOM-32
-┌─────────────┐        ┌──────────────┐
-│ RSSI        │───────▶│ GPIO33       │
-│ DATA        │───────▶│ GPIO19       │
-│ SELECT      │───────▶│ GPIO22       │
-│ CLOCK       │───────▶│ GPIO23       │
-│ +5V (VCC)   │───────▶│ 3.3V         │ ⚠️ Important: Use 3.3V!
-│ GND         │───────▶│ GND          │
-└─────────────┘        └──────────────┘
+RX5808 Module                    ESP32-WROOM-32
+┌──────────────────┐             ┌──────────────┐
+│ GND              │────────────▶│ GND          │
+│ Video            │  (not used)
+│ A6.5W            │  (not used)
+│ RSSI             │────────────▶│ GPIO33       │
+│ +5V              │────────────▶│ 3.3V         │ ⚠️ Important: Use 3.3V!
+│ GND (duplicate)  │  (optional, can leave unconnected)
+│ CH3 (CLOCK)      │────────────▶│ GPIO23       │
+│ CH2 (SELECT)     │────────────▶│ GPIO22       │
+│ CH1 (DATA)       │────────────▶│ GPIO19       │
+└──────────────────┘             └──────────────┘
 
 Optional Peripherals:
 LED (+ resistor) ─────▶ GPIO21 ─┐
@@ -227,6 +255,12 @@ Active Buzzer ────────▶ GPIO27 ─┤
                                  │
                         GND ◀────┘
 ```
+
+**Key Points:**
+- Connect RX5808 **+5V pin to ESP32 3.3V** (undervolt improves RSSI resolution and reduces heat)
+- **CH1 = DATA**, **CH2 = SELECT**, **CH3 = CLOCK** (SPI pins for frequency control)
+- Only **RSSI** and **SELECT** pins are unique per node
+- **DATA** and **CLOCK** are shared between nodes that use the same GPIO pins
 
 **Multi-Node Setup:** Simply connect additional RX5808 modules following the pin tables above. Nodes 1 & 3 share DATA/CLOCK lines, so you can connect them in parallel.
 
