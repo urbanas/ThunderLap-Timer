@@ -60,10 +60,6 @@
                   </select>
                 </div>
                 <div class="node-field">
-                  <label for="pname">Pilot Name:</label>
-                  <input type="text" id="pname" maxlength="20" />
-                </div>
-                <div class="node-field">
                   <label>Frequency:</label>
                   <div class="freq-display" id="freqOutput">5740</div>
                 </div>
@@ -97,10 +93,6 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                   </select>
-                </div>
-                <div class="node-field">
-                  <label for="pname2">Pilot Name:</label>
-                  <input type="text" id="pname2" maxlength="20" />
                 </div>
                 <div class="node-field">
                   <label>Frequency:</label>
@@ -138,10 +130,6 @@
                   </select>
                 </div>
                 <div class="node-field">
-                  <label for="pname3">Pilot Name:</label>
-                  <input type="text" id="pname3" maxlength="20" />
-                </div>
-                <div class="node-field">
                   <label>Frequency:</label>
                   <div class="freq-display" id="freqOutput3">5740</div>
                 </div>
@@ -177,10 +165,6 @@
                   </select>
                 </div>
                 <div class="node-field">
-                  <label for="pname4">Pilot Name:</label>
-                  <input type="text" id="pname4" maxlength="20" />
-                </div>
-                <div class="node-field">
                   <label>Frequency:</label>
                   <div class="freq-display" id="freqOutput4">5740</div>
                 </div>
@@ -191,69 +175,110 @@
 
         <div class="config-container">
           <h3>General Settings</h3>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            <!-- Column 1: Node & Hopping Settings -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="config-item">
+                <label for="activeNodeCount">Active Nodes:</label>
+                <select id="activeNodeCount" onchange="updateActiveNodeCount(this.value)">
+                  <option value="1">1 Node</option>
+                  <option value="2" selected>2 Nodes</option>
+                  <option value="3">3 Nodes</option>
+                  <option value="4">4 Nodes</option>
+                </select>
+              </div>
 
-          <div class="config-item">
-            <label for="activeNodeCount">Active Nodes:</label>
-            <select id="activeNodeCount" onchange="updateActiveNodeCount(this.value)">
-              <option value="1">1 Node</option>
-              <option value="2" selected>2 Nodes</option>
-              <option value="3">3 Nodes</option>
-              <option value="4">4 Nodes</option>
-            </select>
-          </div>
+              <div class="config-item">
+                <label for="frequencyHopping">
+                  Frequency Hopping:
+                  <span class="tooltip" data-tooltip="Allows one RX5808 module per node to monitor multiple pilots by rapidly cycling through different frequencies. Note: Reduces lap timing accuracy compared to dedicated modules. Best for casual racing or testing.">ℹ️</span>
+                </label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="frequencyHopping" onchange="toggleFrequencyHopping(this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
 
-          <div class="config-item">
-            <label for="minLap">Minimum Lap Time:</label>
-            <div class="input-with-value">
-              <input type="number" id="minLap" step="0.5" min="1" max="20" value="4.0" oninput="updateMinLap(this,value)" /> <span>seconds</span>
+              <div id="hoppingConfig" class="config-item" style="display: none;">
+                <label for="hoppingFreqCount">Frequencies per Node:</label>
+                <select id="hoppingFreqCount" onchange="updateHoppingFreqCount(this.value)">
+                  <option value="2">2 Frequencies</option>
+                  <option value="3">3 Frequencies</option>
+                  <option value="4" selected>4 Frequencies</option>
+                </select>
+              </div>
+
+              <div id="hoppingIntervalConfig" class="config-item" style="display: none;">
+                <label for="hoppingInterval">
+                  Frequency Switch Time:
+                  <span class="tooltip" data-tooltip="How often the RX5808 module switches between frequencies when hopping is enabled. Lower values = faster switching but may reduce accuracy.">ℹ️</span>
+                </label>
+                <div class="input-with-value">
+                  <input type="number" id="hoppingInterval" step="10" min="50" max="1000" value="100" oninput="updateHoppingInterval(this.value)" /> <span>ms</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div class="config-item">
-            <label for="raceStartDelay">Race Start Delay:</label>
-            <div class="input-with-value">
-              <input type="number" id="raceStartDelay" step="0.5" min="0" max="15" value="5.0" oninput="updateRaceStartDelay(this,value)" /> <span>seconds</span>
+            <!-- Column 2: Race Settings -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="config-item">
+                <label for="minLap">Minimum Lap Time:</label>
+                <div class="input-with-value">
+                  <input type="number" id="minLap" step="0.5" min="1" max="20" value="4.0" oninput="updateMinLap(this,value)" /> <span>seconds</span>
+                </div>
+              </div>
+
+              <div class="config-item">
+                <label for="raceStartDelay">Race Start Delay:</label>
+                <div class="input-with-value">
+                  <input type="number" id="raceStartDelay" step="0.5" min="0" max="15" value="5.0" oninput="updateRaceStartDelay(this,value)" /> <span>seconds</span>
+                </div>
+              </div>
+
+              <div class="config-item">
+                <label for="announcerSelect">Announcer Type:</label>
+                <select id="announcerSelect">
+                  <option value="none">None</option>
+                  <option value="beep">Beep</option>
+                  <option value="1lap">Lap Time</option>
+                  <option value="2lap">2 Consecutive Laps Time</option>
+                  <option value="3lap">3 Consecutive Laps Time</option>
+                </select>
+              </div>
+
+              <div class="config-item">
+                <label for="rate">Announcer Rate:</label>
+                <div class="input-with-value">
+                  <input type="number" id="rate" min="0.1" max="2.0" step="0.1" value="1.0" oninput="updateAnnouncerRate(this,value)" /> <span>speed</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div class="config-item">
-            <label for="alarmThreshold">Low Battery Alarm:</label>
-            <div class="input-with-value">
-              <input type="number" id="alarmThreshold" step="0.1" min="2.8" max="4.0" value="3.4" oninput="updateAlarmThreshold(this,value)" /> <span>volts</span>
+            <!-- Column 3: System Settings -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="config-item">
+                <label for="alarmThreshold">Low Battery Alarm:</label>
+                <div class="input-with-value">
+                  <input type="number" id="alarmThreshold" step="0.1" min="2.8" max="4.0" value="3.4" oninput="updateAlarmThreshold(this,value)" /> <span>volts</span>
+                </div>
+              </div>
+
+              <div class="config-item">
+                <label for="bvolt">Battery Voltage:</label>
+                <span class="val" id="bvolt"></span>
+              </div>
+
+              <div class="config-item" style="display: none">
+                <label for="ssid">WiFi SSID:</label>
+                <input type="text" id="ssid" maxlength="32" />
+              </div>
+
+              <div class="config-item" style="display: none">
+                <label for="pwd">WiFi Password:</label>
+                <input type="password" id="pwd" maxlength="32" />
+              </div>
             </div>
-          </div>
-
-          <div class="config-item">
-            <label for="announcerSelect">Announcer Type:</label>
-            <select id="announcerSelect">
-              <option value="none">None</option>
-              <option value="beep">Beep</option>
-              <option value="1lap">Lap Time</option>
-              <option value="2lap">2 Consecutive Laps Time</option>
-              <option value="3lap">3 Consecutive Laps Time</option>
-            </select>
-          </div>
-
-          <div class="config-item">
-            <label for="rate">Announcer Rate:</label>
-            <div class="input-with-value">
-              <input type="number" id="rate" min="0.1" max="2.0" step="0.1" value="1.0" oninput="updateAnnouncerRate(this,value)" /> <span>speed</span>
-            </div>
-          </div>
-
-          <div class="config-item">
-            <label for="bvolt">Battery voltage:</label>
-            <span class="val" id="bvolt"></span>
-          </div>
-
-          <div class="config-item" style="display: none">
-            <label for="ssid">WiFi SSID:</label>
-            <input type="text" id="ssid" maxlength="32" />
-          </div>
-
-          <div class="config-item" style="display: none">
-            <label for="pwd">WiFi Password:</label>
-            <input type="password" id="pwd" maxlength="32" />
           </div>
         </div>
 
@@ -271,104 +296,96 @@
             <button id="stopRaceButton" onclick="stopRace()" disabled>Stop</button>
             <button id="clearLapsButton" onclick="clearLaps()">Reset</button>
           </div>
-        </div>
-        
-        <!-- Desktop view: side-by-side tables -->
-        <table class="race-layout-table desktop-race-table">
-          <thead>
-            <tr>
-              <th class="pilot-header">
-                <span id="pilot1Name">Pilot 1</span> (Node 1)
-              </th>
-              <th class="pilot-header">
-                <span id="pilot2Name">Pilot 2</span> (Node 2)
-              </th>
-              <th class="pilot-header node-3">
-                <span id="pilot3Name">Pilot 3</span> (Node 3)
-              </th>
-              <th class="pilot-header node-4">
-                <span id="pilot4Name">Pilot 4</span> (Node 4)
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="lap-table-cell">
-                <table id="lapTable" class="lap-times-table">
-                  <tr>
-                    <th>Lap</th>
-                    <th>Time</th>
-                    <th>3-Lap</th>
-                  </tr>
-                </table>
-              </td>
-              <td class="lap-table-cell">
-                <table id="lapTable2" class="lap-times-table">
-                  <tr>
-                    <th>Lap</th>
-                    <th>Time</th>
-                    <th>3-Lap</th>
-                  </tr>
-                </table>
-              </td>
-              <td class="lap-table-cell node-3">
-                <table id="lapTable3" class="lap-times-table">
-                  <tr>
-                    <th>Lap</th>
-                    <th>Time</th>
-                    <th>3-Lap</th>
-                  </tr>
-                </table>
-              </td>
-              <td class="lap-table-cell node-4">
-                <table id="lapTable4" class="lap-times-table">
-                  <tr>
-                    <th>Lap</th>
-                    <th>Time</th>
-                    <th>3-Lap</th>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <!-- Mobile view: simple single table -->
-        <div class="mobile-race-table">
-          <!-- Single node view: traditional format -->
-          <div class="single-node-table">
-            <table id="singleNodeLapTable" class="lap-times-table">
-              <tr>
-                <th>Lap</th>
-                <th>Time</th>
-                <th>3-Lap</th>
-              </tr>
-            </table>
+          
+          <!-- Toggle for 3-Lap Columns -->
+          <div class="config-item" style="margin: 16px 0; justify-content: center;">
+            <label for="show3LapToggle" style="margin-right: 12px;">Show 3-Lap Times:</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="show3LapToggle" checked onchange="toggle3LapColumns(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
           
-          <!-- Multi-node view: compact format -->
-          <div class="multi-node-table">
-            <table id="mobileLapTable">
-              <thead>
-                <tr>
-                  <th>Lap</th>
-                  <th class="node-col node-1">N1</th>
-                  <th class="node-col node-2">N2</th>
-                  <th class="node-col node-3">N3</th>
-                  <th class="node-col node-4">N4</th>
-                </tr>
-              </thead>
-              <tbody id="mobileLapTableBody">
-                <!-- Rows will be added dynamically -->
-              </tbody>
-            </table>
+          <!-- Debug Mode: Lap Simulation Buttons -->
+          <div id="debugLapButtons" class="debug-lap-buttons" style="display: none;">
+            <h4 style="margin: 16px 0 8px 0; color: var(--text-secondary); font-size: 14px;">Debug: Simulate Lap Times</h4>
+            <div id="debugButtonContainer" class="debug-button-row">
+              <!-- Buttons will be dynamically generated based on hopping mode -->
+            </div>
           </div>
+        </div>
+        
+        <!-- Unified pilot-based race table (works for all modes) -->
+        <div class="unified-race-table">
+          <table id="unifiedLapTable" class="lap-times-table">
+            <thead>
+              <tr id="unifiedLapTableHeader">
+                <th>Lap</th>
+                <!-- Pilot columns will be dynamically generated -->
+              </tr>
+            </thead>
+            <tbody id="unifiedLapTableBody">
+              <!-- Rows will be added dynamically -->
+            </tbody>
+          </table>
         </div>
       </div>
 
       <div id="calib" class="tabcontent">
-        <div class="calib-section">
-          <h3>Node 1 - RSSI Calibration</h3>
+        <!-- Normal Calibration Mode - Node Selector -->
+        <div id="normalCalibrationControls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px; margin-bottom: 20px; background: var(--bg-card); border-radius: var(--radius-sm);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Select Node to Calibrate:</label>
+            <select id="normalCalibNodeSelect" onchange="switchNormalCalibrationNode(this.value)" style="padding: 8px 16px; min-width: 120px; font-size: 14px;">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </div>
+        </div>
+        
+        
+        <!-- Hopping Calibration Mode Controls -->
+        <div id="hoppingCalibrationControls" style="display: none; padding: 16px; margin-bottom: 20px; background: var(--bg-card); border: 2px solid var(--primary-color); border-radius: var(--radius-sm);">
+          <div style="margin-bottom: 16px;">
+            <strong style="color: var(--primary-color); font-size: 16px;">⚡ Frequency Hopping Calibration</strong>
+            <p style="margin: 8px 0 0 0; color: var(--text-secondary); font-size: 13px;">
+              Each RX5808 module switches between <span id="hoppingFreqCountDisplay">4</span> frequencies. Select a pilot below to calibrate their RSSI thresholds.
+            </p>
+          </div>
+          
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px; background: var(--bg-main); border-radius: var(--radius-sm);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Node:</label>
+              <select id="calibNodeSelect" onchange="switchCalibrationNode(this.value)" style="padding: 8px 12px; min-width: 120px; font-size: 14px;">
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Pilot:</label>
+              <select id="calibPilotSelect" onchange="switchCalibrationPilot(this.value)" style="padding: 8px 12px; min-width: 150px; font-size: 14px;">
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+            
+            <div style="flex: 1; min-width: 200px; padding: 8px 12px; background: var(--bg-card); border-radius: var(--radius-sm); border-left: 3px solid var(--primary-color);">
+              <span style="color: var(--text-secondary); font-size: 12px;">Calibrating: </span>
+              <span id="currentCalibPilot" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">P1</span>
+              <span style="color: var(--text-secondary); font-size: 12px;"> @ </span>
+              <span id="currentCalibFreq" style="color: var(--accent-color); font-weight: bold; font-size: 14px;">5740</span>
+              <span style="color: var(--text-secondary); font-size: 12px;"> MHz</span>
+            </div>
+          </div>
+          
+          <div style="margin-top: 12px; padding: 10px; background: var(--bg-main); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary);">
+            <strong>Tip:</strong> When you select a pilot, hopping pauses on that frequency. Adjust the RSSI Enter/Exit sliders below, then switch to the next pilot.
+          </div>
+        </div>
+        
+        <div class="calib-section node-1">
+          <h3>
+            Node 1 - RSSI Calibration
+            <span id="debugFreq1" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq1">5740</span> MHz</span>
+          </h3>
           <div class="chart-container">
             <canvas id="rssiChart" width="800" height="250"></canvas>
           </div>
@@ -388,8 +405,11 @@
           </div>
         </div>
         
-        <div class="calib-section">
-          <h3>Node 2 - RSSI Calibration</h3>
+        <div class="calib-section node-2">
+          <h3>
+            Node 2 - RSSI Calibration
+            <span id="debugFreq2" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq2">5740</span> MHz</span>
+          </h3>
           <div class="chart-container">
             <canvas id="rssiChart2" width="800" height="250"></canvas>
           </div>
@@ -410,7 +430,10 @@
         </div>
         
         <div class="calib-section node-3">
-          <h3>Node 3 - RSSI Calibration</h3>
+          <h3>
+            Node 3 - RSSI Calibration
+            <span id="debugFreq3" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq3">5740</span> MHz</span>
+          </h3>
           <div class="chart-container">
             <canvas id="rssiChart3" width="800" height="250"></canvas>
           </div>
@@ -431,7 +454,10 @@
         </div>
         
         <div class="calib-section node-4">
-          <h3>Node 4 - RSSI Calibration</h3>
+          <h3>
+            Node 4 - RSSI Calibration
+            <span id="debugFreq4" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq4">5740</span> MHz</span>
+          </h3>
           <div class="chart-container">
             <canvas id="rssiChart4" width="800" height="250"></canvas>
           </div>
@@ -451,6 +477,34 @@
           </div>
         </div>
         
+        <!-- Debug: Hopping Calibration Values Table -->
+        <div id="debugCalibrationTable" style="display: none; margin-top: 30px; padding: 16px; background: var(--bg-card); border: 2px solid var(--border-accent); border-radius: var(--radius-sm);">
+          <h3 style="color: var(--accent-color); margin-top: 0;">🔧 Debug: RSSI Calibration Values</h3>
+          <div style="overflow-x: auto;">
+            <table id="calibValuesTable" style="width: 100%; border-collapse: collapse; background: var(--bg-main);">
+              <thead>
+                <tr style="background: var(--primary-gradient); color: white;">
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Node</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Pilot</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Band</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Channel</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Frequency (MHz)</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Enter RSSI</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Exit RSSI</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Threshold Gap</th>
+                </tr>
+              </thead>
+              <tbody id="calibValuesTableBody">
+                <!-- Rows will be populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top: 12px; padding: 10px; background: var(--bg-main); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary);">
+            <strong>Note:</strong> This table shows the current RSSI calibration values for all active nodes/pilots. 
+            Values are editable and read from the configuration inputs. A larger threshold gap (Enter - Exit) provides more reliable lap detection but may miss close passes.
+          </div>
+        </div>
+        
         <button onclick="saveConfig()">Save RSSI Thresholds</button>
       </div>
     </main>
@@ -458,6 +512,16 @@
     <footer>
       <div class="footer-content">
         <div class="footer-controls">
+          <div class="debug-toggle">
+            <label for="debugMode">
+              Debug Mode:
+              <span class="tooltip" data-tooltip="Enable debug features: lap simulation buttons on Race tab, current frequency display on Calibration tab, and frequency switching time configuration.">ℹ️</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="debugMode" onchange="toggleDebugMode(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
           <div class="theme-selector">
             <label for="themeSelect">Theme:</label>
             <select id="themeSelect" onchange="changeTheme(this.value)">
@@ -469,7 +533,6 @@
             </select>
           </div>
         </div>
-        <p>Powered by <a href="https://github.com/phobos-/PhobosLT" target="_blank" style="color: white">PhobosLT</a></p>
       </div>
     </footer>
 

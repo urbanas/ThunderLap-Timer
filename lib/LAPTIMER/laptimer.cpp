@@ -136,3 +136,58 @@ uint32_t LapTimer::getLapTime() {
 bool LapTimer::isLapAvailable() {
     return lapAvailable;
 }
+
+// Frequency Hopping Implementation
+void LapTimer::setHoppingEnabled(bool enabled) {
+    hoppingEnabled = enabled;
+    if (!enabled) {
+        currentHoppingIndex = 0;
+    }
+}
+
+void LapTimer::setHoppingFrequencies(uint16_t *frequencies, uint8_t count) {
+    hoppingFreqCount = (count > 4) ? 4 : count;
+    for (uint8_t i = 0; i < hoppingFreqCount; i++) {
+        hoppingFrequencies[i] = frequencies[i];
+    }
+    currentHoppingIndex = 0;
+}
+
+void LapTimer::setHoppingInterval(uint32_t intervalMs) {
+    hopIntervalMs = intervalMs;
+}
+
+uint16_t LapTimer::getCurrentFrequency() {
+    if (hoppingEnabled && hoppingFreqCount > 0) {
+        return hoppingFrequencies[currentHoppingIndex];
+    }
+    return rx->getFrequency();
+}
+
+void LapTimer::updateHoppingFrequency(uint32_t currentTimeMs) {
+    if (!hoppingEnabled || hoppingFreqCount == 0) {
+        return;
+    }
+    
+    // Check if it's time to hop to the next frequency
+    if (currentTimeMs - lastHopTimeMs >= hopIntervalMs) {
+        lastHopTimeMs = currentTimeMs;
+        
+        // Move to next frequency
+        currentHoppingIndex = (currentHoppingIndex + 1) % hoppingFreqCount;
+        
+        // Set the new frequency on the RX5808 module
+        uint16_t newFreq = hoppingFrequencies[currentHoppingIndex];
+        rx->setFrequency(newFreq);
+        
+        DEBUG("Hopping to frequency %u (index %u)\n", newFreq, currentHoppingIndex);
+    }
+}
+
+void LapTimer::setFrequency(uint16_t frequency) {
+    if (rx) {
+        rx->setFrequency(frequency);
+        DEBUG("Manual frequency set to: %u MHz\n", frequency);
+    }
+}
+

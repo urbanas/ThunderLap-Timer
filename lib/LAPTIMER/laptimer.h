@@ -22,6 +22,16 @@ class LapTimer {
     uint8_t getRssi();
     uint32_t getLapTime();
     bool isLapAvailable();
+    
+    // Frequency hopping support
+    void setHoppingEnabled(bool enabled);
+    void setHoppingFrequencies(uint16_t *frequencies, uint8_t count);
+    void setHoppingInterval(uint32_t intervalMs);
+    void updateHoppingFrequency(uint32_t currentTimeMs);
+    uint16_t getCurrentFrequency();
+    
+    // Manual frequency control (for calibration)
+    void setFrequency(uint16_t frequency);
 
    private:
     laptimer_state_e state = STOPPED;
@@ -42,6 +52,14 @@ class LapTimer {
     uint32_t rssiPeakTimeMs;
 
     bool lapAvailable = false;
+    
+    // Frequency hopping state
+    bool hoppingEnabled = false;
+    uint16_t hoppingFrequencies[4];
+    uint8_t hoppingFreqCount = 0;
+    uint8_t currentHoppingIndex = 0;
+    uint32_t lastHopTimeMs = 0;
+    uint32_t hopIntervalMs = 100; // Switch frequency every 100ms
 
     void lapPeakCapture();
     bool lapPeakCaptured();

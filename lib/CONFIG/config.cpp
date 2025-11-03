@@ -69,6 +69,30 @@ void Config::populateJsonDocument(JsonDocument& config) {
     config["exitRssi4"] = conf.exitRssi4;
     config["name4"] = conf.pilotName4;
     config["activeNodeCount"] = conf.activeNodeCount;
+    
+    // Frequency Hopping Configuration
+    config["frequencyHoppingEnabled"] = conf.frequencyHoppingEnabled;
+    config["hoppingFreqCount"] = conf.hoppingFreqCount;
+    config["hoppingInterval"] = conf.hoppingInterval;
+    
+    // Hopping frequencies as nested arrays
+    JsonArray hopFreqs = config["hoppingFrequencies"].to<JsonArray>();
+    for (uint8_t nodeId = 0; nodeId < 4; nodeId++) {
+        JsonArray nodeFreqs = hopFreqs.add<JsonArray>();
+        for (uint8_t freqIdx = 0; freqIdx < 4; freqIdx++) {
+            nodeFreqs.add(conf.hoppingFrequencies[nodeId][freqIdx]);
+        }
+    }
+    
+    // Hopping pilot names as nested arrays
+    JsonArray hopNames = config["hoppingPilotNames"].to<JsonArray>();
+    for (uint8_t nodeId = 0; nodeId < 4; nodeId++) {
+        JsonArray nodeNames = hopNames.add<JsonArray>();
+        for (uint8_t freqIdx = 0; freqIdx < 4; freqIdx++) {
+            nodeNames.add(conf.hoppingPilotNames[nodeId][freqIdx]);
+        }
+    }
+    
     config["ssid"] = conf.ssid;
     config["pwd"] = conf.password;
 }
@@ -175,6 +199,60 @@ void Config::fromJson(JsonObject source) {
         conf.activeNodeCount = source["activeNodeCount"];
         modified = true;
     }
+    
+    // Frequency Hopping Configuration
+    if (source.containsKey("frequencyHoppingEnabled")) {
+        bool newHoppingEnabled = source["frequencyHoppingEnabled"];
+        if (newHoppingEnabled != conf.frequencyHoppingEnabled) {
+            conf.frequencyHoppingEnabled = newHoppingEnabled;
+            modified = true;
+        }
+    }
+    
+    if (source.containsKey("hoppingFreqCount")) {
+        uint8_t newHoppingFreqCount = source["hoppingFreqCount"];
+        if (newHoppingFreqCount != conf.hoppingFreqCount) {
+            conf.hoppingFreqCount = newHoppingFreqCount;
+            modified = true;
+        }
+    }
+    
+    if (source.containsKey("hoppingInterval")) {
+        uint32_t newHoppingInterval = source["hoppingInterval"];
+        if (newHoppingInterval != conf.hoppingInterval) {
+            conf.hoppingInterval = newHoppingInterval;
+            modified = true;
+        }
+    }
+    
+    if (source.containsKey("hoppingFrequencies")) {
+        JsonArray hopFreqs = source["hoppingFrequencies"];
+        for (uint8_t nodeId = 0; nodeId < 4 && nodeId < hopFreqs.size(); nodeId++) {
+            JsonArray nodeFreqs = hopFreqs[nodeId];
+            for (uint8_t freqIdx = 0; freqIdx < 4 && freqIdx < nodeFreqs.size(); freqIdx++) {
+                uint16_t newFreq = nodeFreqs[freqIdx];
+                if (newFreq != conf.hoppingFrequencies[nodeId][freqIdx]) {
+                    conf.hoppingFrequencies[nodeId][freqIdx] = newFreq;
+                    modified = true;
+                }
+            }
+        }
+    }
+    
+    if (source.containsKey("hoppingPilotNames")) {
+        JsonArray hopNames = source["hoppingPilotNames"];
+        for (uint8_t nodeId = 0; nodeId < 4 && nodeId < hopNames.size(); nodeId++) {
+            JsonArray nodeNames = hopNames[nodeId];
+            for (uint8_t freqIdx = 0; freqIdx < 4 && freqIdx < nodeNames.size(); freqIdx++) {
+                const char* newName = nodeNames[freqIdx];
+                if (strcmp(newName, conf.hoppingPilotNames[nodeId][freqIdx]) != 0) {
+                    strlcpy(conf.hoppingPilotNames[nodeId][freqIdx], newName, sizeof(conf.hoppingPilotNames[nodeId][freqIdx]));
+                    modified = true;
+                }
+            }
+        }
+    }
+    
     if (source["ssid"] != conf.ssid) {
         strlcpy(conf.ssid, source["ssid"] | "", sizeof(conf.ssid));
         modified = true;
@@ -249,6 +327,33 @@ uint8_t Config::getActiveNodeCount() {
     return conf.activeNodeCount;
 }
 
+bool Config::getFrequencyHoppingEnabled() {
+    return conf.frequencyHoppingEnabled;
+}
+
+uint8_t Config::getHoppingFreqCount() {
+    return conf.hoppingFreqCount;
+}
+
+uint32_t Config::getHoppingInterval() {
+    return conf.hoppingInterval;
+}
+
+uint16_t Config::getHoppingFrequency(uint8_t nodeId, uint8_t freqIndex) {
+    if (nodeId < 4 && freqIndex < 4) {
+        return conf.hoppingFrequencies[nodeId][freqIndex];
+    }
+    return 5740; // Default frequency
+}
+
+char* Config::getHoppingPilotName(uint8_t nodeId, uint8_t freqIndex) {
+    if (nodeId < 4 && freqIndex < 4) {
+        return conf.hoppingPilotNames[nodeId][freqIndex];
+    }
+    static char empty[] = "";
+    return empty;
+}
+
 char* Config::getSsid() {
     return conf.ssid;
 }
@@ -280,6 +385,27 @@ void Config::setDefaults(void) {
     conf.enterRssi4 = 120;
     conf.exitRssi4 = 100;
     conf.activeNodeCount = 2;  // Default to 2 nodes
+    
+    // Frequency Hopping Defaults
+    conf.frequencyHoppingEnabled = false;
+    conf.hoppingFreqCount = 4;
+    conf.hoppingInterval = 100;  // 100ms default switching time
+    // Initialize hopping frequencies to default (5740 MHz) and pilot names with dynamic numbering
+    // Pilot numbering is based on hoppingFreqCount:
+    // 2 freqs: Node 1 = P1-P2, Node 2 = P3-P4, Node 3 = P5-P6, Node 4 = P7-P8
+    // 3 freqs: Node 1 = P1-P3, Node 2 = P4-P6, Node 3 = P7-P9, Node 4 = P10-P12
+    // 4 freqs: Node 1 = P1-P4, Node 2 = P5-P8, Node 3 = P9-P12, Node 4 = P13-P16
+    for (uint8_t nodeId = 0; nodeId < 4; nodeId++) {
+        for (uint8_t freqIdx = 0; freqIdx < 4; freqIdx++) {
+            conf.hoppingFrequencies[nodeId][freqIdx] = 5740;
+            // Calculate global pilot number based on hoppingFreqCount
+            uint8_t globalPilotNumber = nodeId * conf.hoppingFreqCount + freqIdx + 1;
+            char label[4];
+            snprintf(label, sizeof(label), "P%d", globalPilotNumber);
+            strlcpy(conf.hoppingPilotNames[nodeId][freqIdx], label, sizeof(conf.hoppingPilotNames[nodeId][freqIdx]));
+        }
+    }
+    
     strlcpy(conf.ssid, "", sizeof(conf.ssid));
     strlcpy(conf.password, "", sizeof(conf.password));
     strlcpy(conf.pilotName, "", sizeof(conf.pilotName));

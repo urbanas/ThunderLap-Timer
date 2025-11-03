@@ -44,6 +44,10 @@ class Webserver {
     bool sendRssi = false;
     uint32_t rssiSentMs = 0;
     
+    // Frequency hopping calibration state
+    bool hoppingPaused = false;
+    uint16_t pausedFrequency = 0;
+    
     // Network configuration (moved from statics)
     AsyncWebServer *server = nullptr;
     AsyncEventSource *events = nullptr;

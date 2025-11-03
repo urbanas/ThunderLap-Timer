@@ -129,6 +129,14 @@ typedef struct {
     uint8_t exitRssi4;
     char pilotName4[21];
     uint8_t activeNodeCount;  // Number of active nodes (1-4)
+    
+    // Frequency Hopping Configuration
+    bool frequencyHoppingEnabled;
+    uint8_t hoppingFreqCount;  // 2-4 frequencies per node
+    uint32_t hoppingInterval;  // Frequency switching time in milliseconds
+    uint16_t hoppingFrequencies[4][4];  // [nodeId][freqIndex] - up to 4 frequencies per 4 nodes
+    char hoppingPilotNames[4][4][21];  // [nodeId][freqIndex][name] - pilot names for each hopping frequency
+    
     char ssid[33];
     char password[33];
 } laptimer_config_t;
@@ -160,6 +168,11 @@ class Config {
     uint8_t getEnterRssi4();
     uint8_t getExitRssi4();
     uint8_t getActiveNodeCount();
+    bool getFrequencyHoppingEnabled();
+    uint8_t getHoppingFreqCount();
+    uint32_t getHoppingInterval();
+    uint16_t getHoppingFrequency(uint8_t nodeId, uint8_t freqIndex);
+    char* getHoppingPilotName(uint8_t nodeId, uint8_t freqIndex);
     char* getSsid();
     char* getPassword();
 
