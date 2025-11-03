@@ -67,35 +67,50 @@ Each node (RX5808 module) monitors RSSI (Received Signal Strength Indicator) for
 
 ### Core Timing Features
 - ✅ **Multi-Node Support** - Time 1 to 4 pilots simultaneously
-- ✅ **Real-Time RSSI Monitoring** - Live graphs for each node
-- ✅ **Voice Announcements** - Customizable lap time callouts with pilot names
+- ✅ **Frequency Hopping Mode** - One RX5808 module can track up to 4 pilots by rapidly switching frequencies
+- ✅ **Real-Time RSSI Monitoring** - Live graphs for each node with Kalman filtering
+- ✅ **Voice Announcements** - Lap time callouts with pilot identification (P1, P2, etc.)
 - ✅ **Multiple Announcer Modes** - Beep only, single lap, 2-lap average, 3-lap average
-- ✅ **Configurable Speed** - Adjustable voice announcement rate
+- ✅ **Configurable Speed** - Adjustable voice announcement rate (0.1x - 2.0x)
 - ✅ **Hole Shot Detection** - Special handling for race start (Lap 0)
-- ✅ **Minimum Lap Time** - Prevents false positives from crashes or tight tracks
+- ✅ **Minimum Lap Time** - Prevents false positives from crashes or tight tracks (1-20 seconds)
+- ✅ **3-Lap Tracking** - Real-time sum of last 3 laps with toggle visibility
+- ✅ **Unified Pilot View** - Consistent interface whether using 1 node or 4 nodes
 
 ### Hardware Features
-- ✅ **Multiple ESP32 Variants** - Supports ESP32-C3, ESP32-S3, DevKit, and more
+- ✅ **Multiple ESP32 Variants** - Supports ESP32-C3, ESP32-S3, ESP32-WROOM-32, and more
 - ✅ **Battery Monitoring** - Configurable low voltage alarm (2.8V - 4.0V)
 - ✅ **Optional LED Indicator** - Visual feedback for events
 - ✅ **Optional Buzzer** - Audio feedback for lap detection
+- ✅ **Flexible Wiring** - Shared SPI pins between nodes for simplified wiring
 
 ### Web Interface Features
-- ✅ **Modern UI** - Dark theme with gradient accents
-- ✅ **5 Color Schemes** - Ocean Teal, Purple Haze, Cyber Cyan, Sunset Orange, Matrix Green
+- ✅ **Modern Dark UI** - Sleek dark theme with gradient accents
+- ✅ **5 Color Schemes** - Ocean Teal, Purple Haze, Cyber Cyan, Sunset Orange (default), Matrix Green
 - ✅ **Fully Responsive** - Optimized for mobile, tablet, and desktop
 - ✅ **Three Main Tabs**:
-  - **Configuration** - Set up pilots, frequencies, and system settings
-  - **Race** - Start/stop timing and view live lap results
-  - **Calibration** - Tune RSSI thresholds with real-time graphs
-- ✅ **Persistent Settings** - All configurations saved to EEPROM
+  - **Configuration** - Set up nodes, frequencies, and system settings in organized grid layout
+  - **Race** - Start/stop timing, view live lap results, toggle 3-lap display
+  - **Calibration** - Tune RSSI thresholds with real-time graphs and node/pilot selectors
+- ✅ **Persistent Settings** - All configurations saved to EEPROM, theme/debug preferences in browser
+- ✅ **Debug Mode** - Advanced features for testing and calibration
+
+### Advanced Features
+- ✅ **Frequency Hopping Calibration** - Per-pilot RSSI threshold configuration
+- ✅ **Debug Calibration Table** - Editable RSSI values table with live sync to sliders
+- ✅ **Dynamic Node Switching** - Dropdown selectors for easy calibration navigation
+- ✅ **Real-Time Frequency Display** - Shows current frequency for each node (debug mode)
+- ✅ **Configurable Hopping Interval** - Adjust frequency switching speed (50-1000ms)
+- ✅ **Lap Simulation** - Test race interface without hardware (debug mode)
 
 ### Mobile Optimizations
-- Card-based configuration layout
+- Compact 3-column grid layout for general settings
+- Card-based node configuration with responsive design
 - Touch-friendly buttons (48px+ tap targets)
-- Simplified race table for multi-node display
-- Compact calibration controls
-- Responsive theme selector in footer
+- Unified pilot-centric race table
+- Optimized calibration controls with dropdown navigation
+- Theme selector and debug toggle in footer
+- No horizontal scrolling on any screen size
 
 ---
 
@@ -352,68 +367,121 @@ default_envs = PhobosLT  ; Default: ESP32-WROOM-32 (esp32dev)
 
 ### Configuration Tab
 
-**Pilot Configuration (Card-based layout):**
-- **Active Nodes** - Select 1-4 nodes to use
-- **Band & Channel** - Set for each pilot (A, B, E, F, R, L bands)
-- **Pilot Name** - Optional name for voice announcements
-- **Frequency Display** - Shows calculated frequency automatically
+**General Settings (3-Column Grid Layout):**
 
-**General Settings:**
-- **Minimum Lap Time** - Prevent false laps (default: 4.0 seconds)
-- **Race Start Delay** - Countdown duration (default: 5.0 seconds)
-- **Low Battery Alarm** - Voltage threshold (2.8V - 4.0V, default: 3.4V)
+*Column 1: Node & Hopping Settings*
+- **Active Nodes** - Select 1-4 nodes to use
+- **Frequency Hopping** - Toggle to enable multi-pilot tracking per node
+- **Frequencies per Node** - Select 2-4 frequencies when hopping enabled
+- **Frequency Switch Time** - Hopping interval in milliseconds (debug mode only)
+
+*Column 2: Race Settings*
+- **Minimum Lap Time** - Prevent false laps (1-20 seconds, default: 4.0)
+- **Race Start Delay** - Countdown duration (0-15 seconds, default: 5.0)
 - **Announcer Type** - None / Beep / Lap Time / 2-Lap / 3-Lap
 - **Announcer Rate** - Speech speed (0.1 - 2.0x, default: 1.0)
-- **Voice Toggle** - Enable/disable voice announcements
-- **Battery Voltage** - Current battery level display
 
-**WiFi Settings** (hidden by default):
-- SSID and password customization
+*Column 3: System Settings*
+- **Low Battery Alarm** - Voltage threshold (2.8V - 4.0V, default: 3.4V)
+- **Battery Voltage** - Current battery level display
+- **WiFi Settings** - SSID and password (hidden by default)
+
+**Node Configuration (Card-based layout):**
+
+*Normal Mode (1 frequency per node):*
+- **Band** - Select frequency band (A, B, E, F, R, L)
+- **Channel** - Select channel (1-8)
+- **Frequency Display** - Shows calculated frequency (e.g., 5740 MHz)
+- **Enter RSSI** - Threshold to start lap crossing (0-255)
+- **Exit RSSI** - Threshold to complete lap crossing (0-255)
+
+*Frequency Hopping Mode (2-4 frequencies per node):*
+- **Pilot Cards** - Individual cards for each pilot (P1, P2, P3, P4)
+- **Band & Channel** - Configure frequency for each pilot
+- **Frequency Display** - Shows calculated frequency for each pilot
+- **Per-Pilot RSSI** - Individual Enter/Exit thresholds (hidden, set in Calibration tab)
+
+**Controls:**
+- **Voice: ON/OFF** - Toggle voice announcements
+- **Test Voice** - Test audio output
+- **Save Configuration** - Persist all settings to EEPROM
 
 **Important:** Click **Save Configuration** after changes!
 
 ### Race Tab
 
-**Desktop View:**
-- Side-by-side lap tables for each active pilot
-- Full details: Lap number, Time, 3-Lap average
-- Individual pilot headers with names
+**Unified Pilot-Centric View:**
+- **Single Table** - All pilots (P1, P2, P3, etc.) displayed together
+- **Lap Column** - Shows lap number (0 for Hole Shot)
+- **Time Columns** - One column per pilot showing lap time
+- **3-Lap Columns** - Optional sum of last 3 laps per pilot (toggle on/off)
+- **Responsive Layout** - Automatically adjusts for screen size
 
-**Mobile View:**
-- **1 Node**: Traditional format (Lap | Time | 3-Lap)
-- **2-4 Nodes**: Compact table (Lap | N1 | N2 | N3 | N4)
-- Lap 0 shown for "Hole Shot" race start
+**Display Modes:**
+- **Normal Mode** - P1 = Node 1, P2 = Node 2, etc.
+- **Hopping Mode** - P1-P4 from Node 1, P5-P8 from Node 2, etc.
+- **Consistent UI** - Same interface regardless of hardware configuration
 
 **Controls:**
 - **Start** - Begin race countdown and timing
 - **Stop** - Stop accepting new laps
 - **Reset** - Clear all lap times
+- **Show 3-Lap** - Toggle visibility of 3-lap sum columns
+
+**Debug Mode Features:**
+- **Pilot Buttons** - Simulate lap times for testing (P1, P2, P3, etc.)
+- **Node Indicators** - Shows which node each pilot belongs to (in parentheses)
 
 ### Calibration Tab
 
-**For Each Active Node:**
-- **Real-time RSSI Graph** - Live signal strength visualization
-- **Enter RSSI** - Threshold to start lap crossing (number input + slider)
-- **Exit RSSI** - Threshold to complete lap crossing (number input + slider)
-- **Horizontal Lines** - Red (Enter) and yellow (Exit) indicators on graph
+**Normal Mode (1 frequency per node):**
+- **Node Selector** - Dropdown to switch between active nodes
+- **Real-time RSSI Graph** - Live signal strength visualization for selected node
+- **Enter RSSI** - Threshold to start lap crossing (number input + slider, 0-255)
+- **Exit RSSI** - Threshold to complete lap crossing (number input + slider, 0-255)
+- **Threshold Lines** - Red (Enter) and yellow (Exit) indicators on graph
 - **Crossing State** - Visual feedback (green = crossing, blue = clear)
 
+**Frequency Hopping Mode (2-4 frequencies per node):**
+- **Node Selector** - Dropdown to select which node to calibrate
+- **Pilot Selector** - Dropdown to select which pilot/frequency to calibrate
+- **Current Pilot Display** - Shows "Calibrating: P1 @ 5740 MHz"
+- **Automatic Pausing** - Hopping pauses on selected frequency for calibration
+- **Per-Pilot Thresholds** - Individual Enter/Exit RSSI for each pilot
+- **Real-time Graph** - Shows RSSI for the selected node
+
 **Graph Features:**
-- Auto-scaling based on Enter/Exit values
-- Kalman-filtered RSSI for smooth visualization
-- Real-time updates at 200ms intervals
+- **Auto-scaling** - Based on Enter/Exit values (±10 points)
+- **Kalman Filtering** - Smooth RSSI visualization
+- **Real-time Updates** - 200ms intervals
+- **Dynamic Range** - Adjusts as you modify thresholds
+
+**Debug Mode Features:**
+- **Current Frequency Display** - Shows active frequency next to each node
+- **Calibration Values Table** - Editable table showing all RSSI thresholds
+- **Bidirectional Sync** - Table and sliders update each other in real-time
+- **Color-Coded Gaps** - Red (< 10), Yellow (> 50), Green (10-50)
 
 **Important:** Click **Save RSSI Thresholds** after calibration!
 
 ### Footer Controls
 
+**Debug Mode Toggle:**
+- **OFF (default)** - Standard racing interface
+- **ON** - Enables advanced features:
+  - Lap simulation buttons on Race tab
+  - Current frequency display on Calibration tab
+  - Frequency switch time configuration
+  - Editable calibration values table
+  - Node indicators in race table
+
 **Theme Selector:**
-- Ocean Teal (default)
+- Ocean Teal
 - Purple Haze
 - Cyber Cyan
-- Sunset Orange
+- **Sunset Orange (default)**
 - Matrix Green
-- Saved to browser localStorage
+- Preference saved to browser localStorage
 
 ---
 
@@ -476,6 +544,31 @@ Exit RSSI: 132 - 10 = 122
 
 **Ideal Setup:** Single sharp peak per pass, clearly above Enter threshold
 
+### Frequency Hopping Calibration
+
+When using frequency hopping mode, each pilot needs individual calibration:
+
+1. **Enable Frequency Hopping**
+   - Go to Configuration tab
+   - Toggle "Frequency Hopping" ON
+   - Select number of frequencies per node (2-4)
+   - Configure band/channel for each pilot
+   - Save configuration
+
+2. **Calibrate Each Pilot**
+   - Go to Calibration tab
+   - Select Node from dropdown
+   - Select Pilot from dropdown
+   - Hopping automatically pauses on that frequency
+   - Adjust Enter/Exit RSSI using sliders or debug table
+   - Repeat for all pilots
+
+3. **Tips for Hopping Mode**
+   - Calibrate with all pilots powered on (frequency interference)
+   - Use debug table for quick bulk adjustments
+   - Recommended gap: 10-20 points between Enter and Exit
+   - Test thoroughly before race day
+
 ---
 
 ## Usage
@@ -502,27 +595,45 @@ Exit RSSI: 132 - 10 = 122
 ### Advanced Features
 
 **Voice Announcements:**
-- Enable "Voice: ON" in footer
-- Set pilot names in Configuration
+- Enable "Voice: ON" button in Configuration tab
+- Announcements identify pilots by number (P1, P2, etc.)
 - Choose announcer type (1-lap, 2-lap, 3-lap)
-- Adjust speech rate if needed
+- Adjust speech rate (0.1x - 2.0x)
+- Test with "Test Voice" button
 
-**Multiple Pilots:**
+**Frequency Hopping Mode:**
+- Track up to 4 pilots per RX5808 module
+- Total capacity: 16 pilots with 4 nodes × 4 frequencies
+- Configurable hopping interval (50-1000ms, debug mode)
+- Per-pilot RSSI calibration
+- Automatic frequency pausing during calibration
+- Seamless integration with race interface
+
+**Multiple Pilots (Normal Mode):**
 - Set Active Nodes to 2, 3, or 4
-- Configure unique frequency for each pilot
+- Configure unique frequency for each node
 - Calibrate each node individually
-- Race tab shows all pilots side-by-side (desktop) or in compact table (mobile)
+- Unified race table shows all pilots
+
+**Debug Mode:**
+- Enable in footer toggle
+- Simulate laps without hardware
+- View current frequencies
+- Edit calibration values in table
+- Configure hopping interval
+- See node assignments in race table
 
 **Battery Monitoring:**
-- Set low voltage alarm in Configuration
-- Current voltage shown in Configuration tab
+- Set low voltage alarm in Configuration (2.8V - 4.0V)
+- Current voltage displayed in Configuration tab
 - Buzzer alerts when threshold reached
 
 **Mobile Racing:**
 - Portrait orientation recommended
-- Theme selector in footer
-- Simplified race table for multi-pilot view
+- Theme selector and debug toggle in footer
+- Responsive tables and controls
 - All features fully functional
+- No horizontal scrolling
 
 ---
 
@@ -598,11 +709,18 @@ Pull requests welcome! Areas for contribution:
 
 This fork extends the original PhobosLT with:
 - ✅ **4-Node Support** - Simultaneously time up to 4 pilots
-- ✅ **Modern UI** - Complete redesign with 5 theme options
+- ✅ **Frequency Hopping** - Track up to 16 pilots (4 nodes × 4 frequencies)
+- ✅ **Modern UI** - Complete redesign with 5 theme options (Sunset Orange default)
 - ✅ **Mobile Optimization** - Touch-friendly controls, responsive tables, card-based layouts
-- ✅ **Enhanced Calibration** - Precision number inputs, dynamic RSSI scaling
-- ✅ **Persistent Preferences** - Theme settings saved locally
-- ✅ **Race Management** - Simplified controls, hole shot detection, multi-node lap tables
+- ✅ **Enhanced Calibration** - Precision number inputs, dynamic RSSI scaling, dropdown navigation
+- ✅ **Debug Mode** - Lap simulation, calibration table, frequency display, hopping interval config
+- ✅ **Unified Pilot View** - Consistent race interface for 1-16 pilots
+- ✅ **3-Lap Tracking** - Real-time sum of last 3 laps with toggle visibility
+- ✅ **Per-Pilot RSSI** - Individual calibration for each pilot in hopping mode
+- ✅ **Bidirectional Sync** - Calibration sliders and debug table update each other
+- ✅ **Persistent Preferences** - Theme, debug mode, and 3-lap toggle saved to browser
+- ✅ **Compact Settings** - 3-column grid layout for general configuration
+- ✅ **Race Management** - Simplified controls, hole shot detection, pilot-centric tables
 - ✅ **Architecture Improvements** - Refactored codebase, improved memory management, expanded API
 
 **Code Retention:** ~30-40% of original PhobosLT code remains (core timing logic, RX5808 SPI communication, Kalman filtering, battery monitoring)
