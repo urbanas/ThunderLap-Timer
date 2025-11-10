@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Multi-Node FPV Race Timing Solution - Supporting up to 4 simultaneous pilots**
+**Multi-Node FPV Race Timing Solution - Supporting up to 16 pilots with frequency hopping**
 
 ---
 
@@ -20,7 +20,7 @@ If you enjoy using ThunderLap Timer and find it useful for your FPV racing, cons
 
 ---
 
-> **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been heavily modified to support up to 4 pilots simultaneously. The codebase has undergone extensive development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, and numerous feature additions. While approximately 30-40% of the original code is reused (core timing algorithms, RX5808 communication), this multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
+> **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been heavily modified to support multi-node timing and frequency hopping. The codebase has undergone extensive development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, frequency hopping mode, auto-calibration, and numerous feature additions. While approximately 30-40% of the original code is reused (core timing algorithms, RX5808 communication), this multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
 
 ---
 
@@ -32,31 +32,38 @@ If you enjoy using ThunderLap Timer and find it useful for your FPV racing, cons
 - [Pin Configuration](#pin-configuration)
 - [Firmware Installation](#firmware-installation)
 - [Calibration Guide](#calibration-guide)
+- [FPV Racing Bands - Frequency Reference](#fpv-racing-bands---frequency-reference)
 
 ---
 
 ## About
 
-ThunderLap Timer is an advanced lap timing solution for 5.8GHz FPV racing that supports **up to 4 simultaneous pilots**. Built on the affordable and widely-available **ESP32-WROOM-32** microcontroller and RX5808 modules, it provides real-time lap timing with a modern, mobile-responsive web interface.
+ThunderLap Timer is an advanced lap timing solution for 5.8GHz FPV racing that supports **up to 4 nodes with frequency hopping to track up to 16 pilots**. Built on the affordable and widely-available **ESP32-WROOM-32** microcontroller and RX5808 modules, it provides real-time lap timing with a modern, mobile-responsive web interface.
 
 The system is completely self-contained - it creates its own WiFi access point and serves a web application that works on any device with a browser (phone, tablet, or laptop). No additional apps or software needed!
 
 ### Key Hardware
 - **ESP32-WROOM-32** (ESP32 DevKit) - The standard ESP32 board, affordable (~$5-10) and available worldwide
-- **RX5808 Modules** - One per pilot, with simple SPI modification
-- **Total Cost** - ~$25-40 for a complete 4-pilot system
+- **RX5808 Modules** - 1-4 modules with simple SPI modification
+  - **Standard Mode**: 1 module per pilot (up to 4 pilots)
+  - **Frequency Hopping Mode**: 1 module tracks up to 4 pilots (up to 16 pilots with 4 modules)
+- **Total Cost** - ~$15-40 depending on configuration
 
 ### How It Works
 
 Each node (RX5808 module) monitors RSSI (Received Signal Strength Indicator) for a specific frequency. When a drone passes the timer, the RSSI peaks. By setting calibrated Enter and Exit RSSI thresholds, the system detects when a drone crosses the timing gate and records lap times with precision.
 
+**Frequency Hopping Mode:** Each RX5808 module can rapidly switch between up to 4 different frequencies, tracking multiple pilots with a single receiver. The system intelligently detects lap crossings for each pilot based on their configured frequency and RSSI thresholds.
+
 **Key Technical Features:**
 - Kalman filtering for RSSI smoothing
 - Real-time RSSI graphing and monitoring
+- Frequency hopping with configurable intervals (50-1000ms)
+- Auto-calibration with 5-pass algorithm
 - WebSocket communication for live updates
 - Server-Sent Events (SSE) for lap notifications
 - LittleFS filesystem for web assets
-- Voice announcements with customizable pilots names
+- Voice announcements with customizable pilot names
 
 ---
 
@@ -142,7 +149,8 @@ For users with an **ESP32-WROOM-32** board, here's the fastest path to get racin
    - Connect to WiFi: `ThunderLap_XXXX` (password: `thunderlap`)
    - Open browser to `20.0.0.1`
    - Set your band/channel in Configuration tab
-   - Calibrate RSSI thresholds
+   - Optional: Enable frequency hopping for multiple pilots per node
+   - Calibrate RSSI thresholds (or use Auto-Calibration)
    - Start racing!
 
 **Full details in sections below** ⬇️
@@ -151,11 +159,13 @@ For users with an **ESP32-WROOM-32** board, here's the fastest path to get racin
 
 ## Hardware Requirements
 
-### Core Components (Per Node)
+### Core Components
 - **ESP32 Board** with USB (one board can handle all 4 nodes)
   - Recommended: **ESP32-WROOM-32** (ESP32 DevKit) - Most common and affordable
   - Also supported: LilyGo T-Energy, T-Cell, ESP32-C3, ESP32-S3
-- **RX5808 Module** with [SPI mod](https://sheaivey.github.io/rx5808-pro-diversity/docs/rx5808-spi-mod.html)
+- **RX5808 Module(s)** with [SPI mod](https://sheaivey.github.io/rx5808-pro-diversity/docs/rx5808-spi-mod.html)
+  - **Standard Mode**: 1 module per pilot (up to 4 pilots total)
+  - **Frequency Hopping Mode**: Each module tracks up to 4 pilots
 - **Power Supply** - Battery, powerbank, or USB power
   - Single ESP32 can power up to 4 RX5808 modules
 
@@ -165,14 +175,25 @@ For users with an **ESP32-WROOM-32** board, here's the fastest path to get racin
 - **Battery** - For portable operation (e.g., 1S Li-Ion for T-Energy)
 
 ### Building Multi-Node Setup
-For a complete 4-node system, you need:
-- 1x ESP32-WROOM-32 board (or any supported variant)
+
+**Standard 4-Pilot System (Dedicated Modules):**
+- 1x ESP32-WROOM-32 board
 - 4x RX5808 modules (SPI modded)
 - 1x Power supply (USB or battery)
 - 1x Optional buzzer
 - 1x Optional LED
+- **Cost:** ~$25-40 USD
 
-**Cost Estimate:** ~$25-40 USD for a complete 4-node system
+**Frequency Hopping System (Up to 16 Pilots):**
+- 1x ESP32-WROOM-32 board
+- 1-4x RX5808 modules (SPI modded)
+  - 1 module = up to 4 pilots
+  - 2 modules = up to 8 pilots
+  - 4 modules = up to 16 pilots
+- 1x Power supply (USB or battery)
+- 1x Optional buzzer
+- 1x Optional LED
+- **Cost:** ~$15-40 USD depending on number of modules
 
 ---
 
@@ -635,12 +656,17 @@ Your timer defaults to F1 (5740 MHz), which is in a crowded frequency range:
 ### What's Different in ThunderLap Timer?
 
 This fork extends the original PhobosLT with:
-- ✅ **4-Node Support** - Simultaneously time up to 4 pilots
-- ✅ **Modern UI** - Complete redesign with 5 theme options
+- ✅ **4-Node Support** - Simultaneously time up to 4 pilots (standard mode)
+- ✅ **Frequency Hopping** - Track up to 16 pilots with 4 RX5808 modules
+- ✅ **Auto-Calibration** - 5-pass algorithm for optimal RSSI threshold detection
+- ✅ **Modern UI** - Complete redesign with 5 theme options and dark mode
 - ✅ **Mobile Optimization** - Touch-friendly controls, responsive tables, card-based layouts
-- ✅ **Enhanced Calibration** - Precision number inputs, dynamic RSSI scaling
-- ✅ **Persistent Preferences** - Theme settings saved locally
-- ✅ **Race Management** - Simplified controls, hole shot detection, multi-node lap tables
+- ✅ **Enhanced Calibration** - Per-pilot RSSI configuration, debug table, precision inputs
+- ✅ **3-Lap Tracking** - Real-time display of last 3 laps sum with toggle visibility
+- ✅ **Debug Mode** - Advanced testing features including lap simulation
+- ✅ **Persistent Preferences** - Theme settings and debug mode saved to browser
+- ✅ **Race Management** - Simplified controls, hole shot detection, unified pilot view
+- ✅ **Frequency Reference Guide** - Comprehensive FPV band documentation
 - ✅ **Architecture Improvements** - Refactored codebase, improved memory management, expanded API
 
 **Code Retention:** ~30-40% of original PhobosLT code remains (core timing logic, RX5808 SPI communication, Kalman filtering, battery monitoring)
