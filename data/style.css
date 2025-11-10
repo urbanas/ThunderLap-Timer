@@ -210,6 +210,14 @@ main {
   letter-spacing: 0.5px;
 }
 
+/* Toggle switch label should not have min-width */
+.config-item label.toggle-switch {
+  min-width: unset;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 /* Input Styling */
 .config-item input[type="text"],
 .config-item input[type="password"],
@@ -449,6 +457,144 @@ table tr:hover {
   background-color: var(--bg-card-hover);
 }
 
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px !important;
+  min-width: 50px;
+  max-width: 50px;
+  height: 24px;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-input);
+  border: 2px solid var(--border-color);
+  transition: var(--transition-normal);
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--text-secondary);
+  transition: var(--transition-normal);
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--primary-gradient);
+  border-color: var(--primary-color);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+  background-color: white;
+}
+
+.toggle-slider:hover {
+  border-color: var(--primary-color);
+}
+
+/* Frequency Hopping Config Item - Prevent stretching */
+.config-item:has(#frequencyHopping) {
+  justify-content: flex-start;
+}
+
+.config-item:has(#frequencyHopping) > label:first-child {
+  flex: 0 0 auto;
+  margin-right: 16px;
+}
+
+.config-item:has(#frequencyHopping) .toggle-switch {
+  flex: 0 0 50px;
+}
+
+/* Tooltip */
+.tooltip {
+  cursor: help;
+  font-size: 14px;
+  color: var(--primary-color);
+  margin-left: 4px;
+  display: inline-block;
+  position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.tooltip:hover {
+  transform: scale(1.2);
+}
+
+.tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 8px 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  white-space: normal;
+  width: max-content;
+  max-width: 300px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  line-height: 1.4;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-2px);
+  border: 6px solid transparent;
+  border-top-color: var(--border-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: 1000;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Hopping Frequency Fields */
+/* Hopping frequency cards - styles are now inline in JavaScript for better control */
+.hopping-freq-group {
+  /* Styles applied inline */
+}
+
+.hopping-freq-item {
+  /* Styles applied inline */
+}
+
 /* Node Cards Container */
 .node-cards-container {
   display: grid;
@@ -468,9 +614,16 @@ table tr:hover {
   overflow: hidden;
   box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
+  display: none; /* Hide all by default, JS will show based on activeNodeCount */
 }
 
-/* Hide Node 3 and Node 4 cards by default */
+/* Node 1 is shown by default (for when JS hasn't loaded yet) */
+.node-card.node-1 {
+  display: block;
+}
+
+/* The rest are hidden by default and JS will show them */
+.node-card.node-2,
 .node-card.node-3,
 .node-card.node-4 {
   display: none;
@@ -873,12 +1026,133 @@ footer a:hover {
   color: var(--accent-color);
 }
 
+/* Unified Race Table */
+.unified-race-table {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+#unifiedLapTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+#unifiedLapTable th {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#unifiedLapTable th:first-child {
+  min-width: 60px;
+}
+
+#unifiedLapTable td {
+  padding: 10px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+#unifiedLapTable tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+#unifiedLapTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Debug Mode Styles */
+.debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 24px;
+}
+
+.debug-toggle label:first-child {
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.debug-lap-buttons {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border-color);
+}
+
+.debug-button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.debug-btn {
+  padding: 8px 16px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.debug-btn:hover {
+  background: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.debug-btn:active {
+  transform: translateY(0);
+}
+
+.debug-frequency {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-color);
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  * {
+    max-width: 100%;
+  }
+  
   body {
     font-size: 15px;
+    overflow-x: hidden;
+  }
+  
+  main {
+    padding: 16px 12px;
+    overflow-x: hidden;
   }
 
+  .tabcontent {
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  
   header {
     padding: 16px 16px 8px 16px;
   }
@@ -906,20 +1180,19 @@ footer a:hover {
     font-size: 14px;
   }
 
-  main {
-    padding: 16px 12px;
-  }
-
-  .tabcontent {
-    padding: 20px;
-  }
-
   /* Configuration items stack */
   .config-item {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
     margin-bottom: 16px;
+  }
+  
+  /* Keep toggle switch in row layout on mobile */
+  .config-item:has(#frequencyHopping) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .config-item label {
@@ -951,10 +1224,14 @@ footer a:hover {
   .node-cards-container {
     grid-template-columns: 1fr;
     gap: 20px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .node-card {
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .node-card-header {
@@ -965,13 +1242,25 @@ footer a:hover {
   .node-card-body {
     padding: 20px;
     gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .node-field {
+    width: 100%;
+    max-width: 100%;
   }
 
   .node-field select,
   .node-field input[type="text"] {
     min-height: 48px;
     font-size: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
+  
+  /* Hopping frequency cards responsive - handled inline */
 
   /* Old node config table - hidden on mobile (using cards instead) */
   .node-config-table {
@@ -1003,27 +1292,41 @@ footer a:hover {
   /* Show mobile race table */
   .mobile-race-table {
     display: block !important;
+    width: 100%;
+    overflow-x: auto;
   }
   
   /* Show single node table by default, hide multi-node */
   .single-node-table {
     display: block;
+    width: 100%;
+    overflow-x: auto;
   }
   
   .multi-node-table {
     display: none;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #mobileLapTable,
+  #singleNodeLapTable {
+    width: 100%;
+    table-layout: fixed;
   }
 
   #mobileLapTable th,
   #mobileLapTable td {
     padding: 8px 4px;
     font-size: 13px;
+    word-wrap: break-word;
   }
   
   #singleNodeLapTable th,
   #singleNodeLapTable td {
     padding: 8px 4px;
     font-size: 13px;
+    word-wrap: break-word;
   }
 
   /* Calibration mobile */
@@ -1096,4 +1399,56 @@ footer a:hover {
 
 .loading {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hide 3-lap columns when toggle is off */
+/* Column structure: Lap(1) | P1 time(2) | P1 3-lap(3) | P2 time(4) | P2 3-lap(5) | P3 time(6) | P3 3-lap(7) | ... */
+/* We want to hide columns: 3, 5, 7, 9, 11, 13... (odd numbers starting from 3) */
+/* Formula: columns at position 2n+1 where n >= 1, which gives us 3, 5, 7, 9... */
+
+/* Hide 3-lap header columns */
+#unifiedLapTable.hide-3lap th.three-lap-col {
+  display: none;
+}
+
+/* Hide 3-lap data cells */
+/* Start at column 3, then every 2 columns: 3, 5, 7, 9, 11... */
+#unifiedLapTable.hide-3lap tbody tr td:nth-child(2n+3) {
+  display: none;
+}
+
+/* When 3-lap columns are hidden, adjust the table layout */
+#unifiedLapTable.hide-3lap {
+  table-layout: auto;
+}
+
+/* Auto-Calibration Styles */
+.peak-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-weight: bold;
+  font-size: 14px;
+  min-width: 50px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.peak-badge.detected {
+  background: var(--primary-gradient);
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(var(--primary-color-rgb), 0.3);
+}
+
+#autoCalSection button {
+  transition: all 0.3s ease;
+}
+
+#autoCalSection button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }

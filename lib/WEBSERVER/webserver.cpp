@@ -350,8 +350,158 @@ Battery Voltage:\t%0.1fv";
         DEBUG("\n");
 #endif
         conf->fromJson(jsonObj);
+        conf->write();  // Immediately write to EEPROM to ensure persistence
         request->send(200, "application/json", "{\"status\": \"OK\"}");
         led->on(200);
+    });
+
+    // Debug endpoint: Get current frequencies
+    server->on("/getCurrentFrequencies", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        char json[200];
+        snprintf(json, sizeof(json), 
+            "{\"node1\":%u,\"node2\":%u,\"node3\":%u,\"node4\":%u}",
+            timer1->getCurrentFrequency(),
+            timer2->getCurrentFrequency(),
+            timer3->getCurrentFrequency(),
+            timer4->getCurrentFrequency()
+        );
+        request->send(200, "application/json", json);
+        led->on(50);
+    });
+
+    // Debug endpoint: Simulate lap for a node
+    server->on("/simulateLap", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        if (request->hasParam("node")) {
+            int nodeId = request->getParam("node")->value().toInt();
+            uint32_t currentTime = millis();
+            
+            // Always send a simulated time (5-15 seconds) for debug purposes
+            uint32_t simulatedTime = 5000 + (currentTime % 10000);
+            sendLaptimeEvent(simulatedTime, nodeId);
+            
+            char json[100];
+            snprintf(json, sizeof(json), "{\"status\":\"OK\",\"node\":%d,\"time\":%u}", nodeId, simulatedTime);
+            request->send(200, "application/json", json);
+        } else {
+            request->send(400, "application/json", "{\"status\":\"ERROR\",\"message\":\"Missing node parameter\"}");
+        }
+        led->on(50);
+    });
+
+    // Pause frequency hopping on a specific frequency for calibration
+    server->on("/pauseHoppingOn", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        if (request->hasParam("frequency")) {
+            pausedFrequency = request->getParam("frequency")->value().toInt();
+            hoppingPaused = true;
+            
+            // Set all active timers to the specified frequency
+            if (timer1) timer1->setFrequency(pausedFrequency);
+            if (timer2) timer2->setFrequency(pausedFrequency);
+            if (timer3) timer3->setFrequency(pausedFrequency);
+            if (timer4) timer4->setFrequency(pausedFrequency);
+            
+            char json[100];
+            snprintf(json, sizeof(json), "{\"status\":\"paused\",\"frequency\":%u}", pausedFrequency);
+            request->send(200, "application/json", json);
+            
+            DEBUG("Hopping paused on frequency: %u MHz\n", pausedFrequency);
+        } else {
+            request->send(400, "application/json", "{\"status\":\"ERROR\",\"message\":\"Missing frequency parameter\"}");
+        }
+        led->on(50);
+    });
+
+    // Resume normal frequency hopping after calibration
+    server->on("/resumeHopping", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        hoppingPaused = false;
+        pausedFrequency = 0;
+        
+        request->send(200, "application/json", "{\"status\":\"resumed\"}");
+        
+        DEBUG("Hopping resumed\n");
+        led->on(50);
+    });
+    
+    // Auto-calibration endpoints
+    server->on("/autoCal/start", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        uint8_t node = 1;
+        if (request->hasParam("node", true)) {
+            node = request->getParam("node", true)->value().toInt();
+        }
+        
+        // Start auto-calibration for the specified node
+        switch (node) {
+            case 1: timer1->startAutoCalibration(); break;
+            case 2: timer2->startAutoCalibration(); break;
+            case 3: timer3->startAutoCalibration(); break;
+            case 4: timer4->startAutoCalibration(); break;
+            default: break;
+        }
+        
+        char json[100];
+        snprintf(json, sizeof(json), "{\"status\":\"started\",\"node\":%u}", node);
+        request->send(200, "application/json", json);
+        
+        DEBUG("Auto-calibration started for node %u\n", node);
+    });
+    
+    server->on("/autoCal/stop", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        uint8_t node = 1;
+        if (request->hasParam("node", true)) {
+            node = request->getParam("node", true)->value().toInt();
+        }
+        
+        // Stop auto-calibration for the specified node
+        switch (node) {
+            case 1: timer1->stopAutoCalibration(); break;
+            case 2: timer2->stopAutoCalibration(); break;
+            case 3: timer3->stopAutoCalibration(); break;
+            case 4: timer4->stopAutoCalibration(); break;
+            default: break;
+        }
+        
+        request->send(200, "application/json", "{\"status\":\"stopped\"}");
+        
+        DEBUG("Auto-calibration stopped for node %u\n", node);
+    });
+    
+    server->on("/autoCal/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        uint8_t node = 1;
+        if (request->hasParam("node")) {
+            node = request->getParam("node")->value().toInt();
+        }
+        
+        LapTimer* timer = nullptr;
+        switch (node) {
+            case 1: timer = timer1; break;
+            case 2: timer = timer2; break;
+            case 3: timer = timer3; break;
+            case 4: timer = timer4; break;
+            default: break;
+        }
+        
+        if (timer) {
+            char json[400];
+            snprintf(json, sizeof(json), 
+                "{\"active\":%s,\"pass\":%u,\"minRssi\":%u,\"currentRssi\":%u,\"calculatedEnter\":%u,\"calculatedExit\":%u,\"peaks\":[%u,%u,%u,%u,%u]}",
+                timer->isAutoCalibrating() ? "true" : "false",
+                timer->getAutoCalPass(),
+                timer->getAutoCalMinRssi(),
+                timer->getRssi(),
+                timer->getAutoCalCalculatedEnter(),
+                timer->getAutoCalCalculatedExit(),
+                timer->getAutoCalPeakRssi(0),
+                timer->getAutoCalPeakRssi(1),
+                timer->getAutoCalPeakRssi(2),
+                timer->getAutoCalPeakRssi(3),
+                timer->getAutoCalPeakRssi(4)
+            );
+            request->send(200, "application/json", json);
+        } else {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid node\"}");
+        }
+        
+        led->on(50);
     });
 
     server->serveStatic("/", LittleFS, "/").setCacheControl("max-age=600");

@@ -24,6 +24,10 @@ void RX5808::init() {
     setFrequency(POWER_DOWN_FREQ_MHZ);
 }
 
+uint16_t RX5808::getFrequency() {
+    return currentFrequency;
+}
+
 void RX5808::handleFrequencyChange(uint32_t currentTimeMs, uint16_t potentiallyNewFreq) {
     if ((currentFrequency != potentiallyNewFreq) && ((currentTimeMs - lastSetFreqTimeMs) > RX5808_MIN_BUSTIME)) {
         lastSetFreqTimeMs = currentTimeMs;
