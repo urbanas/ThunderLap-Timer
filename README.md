@@ -496,46 +496,21 @@ When using frequency hopping mode, each pilot needs individual calibration:
 
 ## FPV Racing Bands - Frequency Reference
 
-Understanding frequency spacing and overlap is crucial for multi-pilot racing. This guide helps you choose the best frequencies to avoid interference.
+> **Important for Multi-Pilot Racing:** Always use **Raceband (Band R)** for multi-pilot setups. Raceband is specifically designed for racing with consistent 37 MHz spacing between channels, providing optimal interference-free operation. Other bands have irregular spacing or overlap and should be avoided for multi-pilot timing.
 
-### Complete Frequency Spectrum (5362 MHz - 5945 MHz)
+### Raceband Frequencies (5658 - 5917 MHz)
 
-```
-FREQUENCY RANGE BY BAND:
+**All Raceband Channels:**
+- R1: 5658 MHz
+- R2: 5695 MHz
+- R3: 5732 MHz
+- R4: 5769 MHz
+- R5: 5806 MHz
+- R6: 5843 MHz
+- R7: 5880 MHz
+- R8: 5917 MHz
 
-Band L (Lowband):    5362 - 5621 MHz  |  37 MHz spacing  |  8 channels
-Band R (Raceband):   5658 - 5917 MHz  |  37-39 MHz gap   |  8 channels  ⭐ BEST
-Band E (Boscam E):   5645 - 5945 MHz  |  Irregular gaps  |  8 channels
-Band A (Airwave):    5725 - 5865 MHz  |  20 MHz spacing  |  8 channels
-Band B (Boscam B):   5733 - 5866 MHz  |  19 MHz spacing  |  8 channels  ⚠️ Overlaps A
-Band F (Fatshark):   5740 - 5880 MHz  |  20 MHz spacing  |  8 channels
-```
-
-### All Channel Frequencies
-
-**Band L (Lowband):**
-- L1: 5362 | L2: 5399 | L3: 5436 | L4: 5473
-- L5: 5510 | L6: 5547 | L7: 5584 | L8: 5621
-
-**Band R (Raceband) ⭐ Recommended:**
-- R1: 5658 | R2: 5695 | R3: 5732 | R4: 5769
-- R5: 5806 | R6: 5843 | R7: 5880 | R8: 5917
-
-**Band E (Boscam E / DJI):**
-- E1: 5705 | E2: 5685 | E3: 5665 | E4: 5645
-- E5: 5885 | E6: 5905 | E7: 5925 | E8: 5945
-
-**Band A (Airwave):**
-- A1: 5865 | A2: 5845 | A3: 5825 | A4: 5805
-- A5: 5785 | A6: 5765 | A7: 5745 | A8: 5725
-
-**Band B (Boscam B):**
-- B1: 5733 | B2: 5752 | B3: 5771 | B4: 5790
-- B5: 5809 | B6: 5828 | B7: 5847 | B8: 5866
-
-**Band F (Fatshark):**
-- F1: 5740 | F2: 5760 | F3: 5780 | F4: 5800
-- F5: 5820 | F6: 5840 | F7: 5860 | F8: 5880
+**Spacing:** Consistent 37 MHz between channels ✅
 
 ### Recommended Frequency Combinations
 
@@ -574,75 +549,20 @@ Band F (Fatshark):   5740 - 5880 MHz  |  20 MHz spacing  |  8 channels
 
 When using the frequency hopping feature to track multiple pilots per node:
 
-1. **Use Raceband Only**
-   - Consistent spacing prevents interference
-   - Predictable performance across all frequencies
+1. **Use Maximum Spacing**
+   - For 2 frequencies per node: Use R1 + R5 or R2 + R6 (148 MHz spacing)
+   - For 3 frequencies per node: Use R1 + R4 + R7 (111 MHz spacing)
+   - For 4 frequencies per node: Use R1 + R3 + R5 + R7 (74 MHz spacing)
 
-2. **Maximum Spacing**
-   - For 2 frequencies per node: Use R1 + R5 or R2 + R6
-   - For 3 frequencies per node: Use R1 + R4 + R7
-   - For 4 frequencies per node: Use R1 + R3 + R5 + R7
+2. **Calibration Tips**
+   - Calibrate with all pilots powered on to account for interference
+   - Each pilot needs individual RSSI threshold configuration
+   - Test thoroughly before race day
 
-3. **Avoid Mixing Bands**
-   - Don't mix Raceband with Band A/B/F in hopping mode
-   - Inconsistent RSSI behavior between bands
-
-### Visual Frequency Map
-
-```
-5300 ├──────────────────────────────────────────────┤ 6000 MHz
-     │                                              │
-5350 ┤  LOWBAND (L1-L8)                            ┤ 5950
-     │  ████████████████                            │
-5400 ┤                                              ┤ 5900
-     │                                              │
-5450 ┤                                              ┤ 5850
-     │                                              │
-5500 ┤                                              ┤ 5800
-     │                                              │
-5550 ┤          RACEBAND (R1-R8) ⭐                 ┤ 5750
-     │          ████████████████████████████        │
-5600 ┤          │   │   │   │   │   │   │          ┤ 5700
-     │        E4│   │   │   │   │   │   │          │
-5650 ┤          │ E1│E2│E3 │   │   │   │          ┤ 5650
-     │    ████████████████████████████████████     │
-5700 ┤    A8 A7│A6 A5│A4 A3│A2 A1│   │   │   E5    ┤ 5600
-     │    B1 B2│B3 B4│B5 B6│B7 B8│   │   │   │     │
-5750 ┤    F1 F2│F3 F4│F5 F6│F7 F8│   │   │   │     ┤ 5550
-     │    ████████████████████████████████████     │
-5800 ┤          │     │     │     │   E6│E7│E8     ┤ 5500
-     │                                              │
-5850 ┤                                              ┤ 5450
-     │        Legend:                               │
-     │        ██ = High overlap zone (avoid)        │
-     │        ⭐ = Raceband (recommended)           │
-     │        🔹 = Default frequency (F1)          │
-     └──────────────────────────────────────────────┘
-```
-
-### Quick Reference: Minimum Safe Spacing
-
-| Spacing | Quality | Use Case |
-|---------|---------|----------|
-| **80+ MHz** | 🏆 Excellent | Professional racing, no interference |
-| **40-80 MHz** | ✅ Good | Reliable for most conditions |
-| **20-40 MHz** | ⚠️ Acceptable | May have minor interference |
-| **< 20 MHz** | 🚫 Poor | Avoid - high interference risk |
-
-### Default Frequency (F1 - 5740 MHz)
-
-Your timer defaults to F1 (5740 MHz), which is in a crowded frequency range:
-- Close to: A7 (5745), B2 (5752), R3 (5732)
-- **Recommended change**: Use **R1 (5658)** or **R5 (5806)** for cleaner signal
-
-### Pro Tips
-
-1. **Always use Raceband** when possible - it's specifically designed for racing
-2. **Larger spacing = better reliability** in noisy RF environments
-3. **Test your frequencies** before race day with all pilots powered on
-4. **Calibrate with interference** - turn on all pilots when calibrating RSSI
-5. **Default is not optimal** - change from F1 to Raceband channels
-6. **Frequency hopping** works best with maximum-spaced Raceband channels
+3. **Performance Notes**
+   - Larger spacing = better reliability
+   - Consistent 37 MHz Raceband spacing prevents crosstalk
+   - Avoid mixing Raceband with other bands
 
 ---
 

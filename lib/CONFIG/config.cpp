@@ -287,7 +287,7 @@ uint16_t Config::getFrequency(uint8_t nodeId) {
     if (nodeId < 4) {
         return conf.frequency[nodeId];
     }
-    return 5740; // Default
+    return 5658; // Default (Raceband R1)
 }
 
 uint32_t Config::getMinLapMs() {
@@ -336,7 +336,7 @@ uint16_t Config::getHoppingFrequency(uint8_t nodeId, uint8_t freqIndex) {
     if (nodeId < 4 && freqIndex < 4) {
         return conf.hoppingFrequencies[nodeId][freqIndex];
     }
-    return 5740; // Default frequency
+    return 5658; // Default frequency (Raceband R1)
 }
 
 uint8_t Config::getHoppingEnterRssi(uint8_t nodeId, uint8_t freqIndex) {
@@ -382,7 +382,7 @@ void Config::setDefaults(void) {
     
     // Node-specific defaults
     for (uint8_t i = 0; i < 4; i++) {
-        conf.frequency[i] = 5740;  // Default frequency
+        conf.frequency[i] = 5658;  // Default frequency (Raceband R1)
         conf.enterRssi[i] = 120;
         conf.exitRssi[i] = 100;
     }
@@ -393,9 +393,11 @@ void Config::setDefaults(void) {
     conf.hoppingInterval = 100;  // 100ms default switching time
     
     // Initialize hopping frequencies and RSSI thresholds
+    // Default to Raceband: R1, R3, R5, R7 for good spacing
+    uint16_t defaultRacebandFreqs[4] = {5658, 5732, 5806, 5880}; // R1, R3, R5, R7
     for (uint8_t nodeId = 0; nodeId < 4; nodeId++) {
         for (uint8_t freqIdx = 0; freqIdx < 4; freqIdx++) {
-            conf.hoppingFrequencies[nodeId][freqIdx] = 5740;
+            conf.hoppingFrequencies[nodeId][freqIdx] = defaultRacebandFreqs[freqIdx];
             conf.hoppingEnterRssi[nodeId][freqIdx] = 120;
             conf.hoppingExitRssi[nodeId][freqIdx] = 100;
         }

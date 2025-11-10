@@ -2566,11 +2566,11 @@ function updateHoppingFrequencyFields() {
       bandSelect.style.cursor = 'pointer';
       bandSelect.style.transition = 'all 0.2s ease';
       bandSelect.innerHTML = `
+        <option value="R">Band R (Raceband)</option>
         <option value="A">Band A (Boscam A / TBS / RC305)</option>
         <option value="B">Band B (Boscam B)</option>
         <option value="E">Band E (Boscam E / DJI)</option>
         <option value="F">Band F (Fatshark / NexWave / ImmersionRC)</option>
-        <option value="R">Band R (Raceband)</option>
         <option value="L">Band L (Lowband)</option>
       `;
       
