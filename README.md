@@ -31,10 +31,7 @@ If you enjoy using ThunderLap Timer and find it useful for your FPV racing, cons
 - [Hardware Requirements](#hardware-requirements)
 - [Pin Configuration](#pin-configuration)
 - [Firmware Installation](#firmware-installation)
-- [Web Interface](#web-interface)
 - [Calibration Guide](#calibration-guide)
-- [Usage](#usage)
-- [Community](#community)
 
 ---
 
@@ -121,7 +118,7 @@ For users with an **ESP32-WROOM-32** board, here's the fastest path to get racin
 
 3. **Flash Firmware**
    - Clone this repo in VSCode with PlatformIO
-   - Select `PhobosLT` target (default)
+   - Select `ThunderLap` target (default)
    - Build and upload firmware
    - Upload filesystem image
 
@@ -305,12 +302,12 @@ The default configuration is set for **ESP32-WROOM-32** (ESP32 DevKit), which sh
 
 ```ini
 [platformio]
-default_envs = PhobosLT  ; Default: ESP32-WROOM-32 (esp32dev)
-                          ; Other options: ESP32C3, ESP32S3, LicardoTimer
+default_envs = ThunderLap  ; Default: ESP32-WROOM-32 (esp32dev)
+                            ; Other options: ESP32C3, ESP32S3, LicardoTimer
 ```
 
 **Available Targets:**
-- `PhobosLT` - ESP32-WROOM-32 / ESP32 DevKit (default, recommended)
+- `ThunderLap` - ESP32-WROOM-32 / ESP32 DevKit (default, recommended)
 - `ESP32C3` - ESP32-C3 variant
 - `ESP32S3` - ESP32-S3 variant  
 - `LicardoTimer` - Custom hardware variant
@@ -319,7 +316,7 @@ default_envs = PhobosLT  ; Default: ESP32-WROOM-32 (esp32dev)
 
 **Step 1: Build Firmware**
 1. Open PlatformIO sidebar (ant icon)
-2. Expand your target (e.g., `PhobosLT`)
+2. Expand your target (e.g., `ThunderLap`)
 3. Under `General`, click **Build**
 4. Wait for "Success" message
 
@@ -338,82 +335,6 @@ default_envs = PhobosLT  ; Default: ESP32-WROOM-32 (esp32dev)
 - Check USB cable (data-capable, not charge-only)
 - Try a different USB port
 - Check PlatformIO terminal for detailed errors
-
----
-
-## Web Interface
-
-### First Connection
-
-1. **Power On** - Timer boots and creates WiFi access point
-2. **Connect** - Find WiFi network: `ThunderLap_XXXX`
-3. **Password** - Enter: `thunderlap`
-4. **Access** - Open browser to `20.0.0.1` (or wait for auto-redirect)
-
-### Configuration Tab
-
-**Pilot Configuration (Card-based layout):**
-- **Active Nodes** - Select 1-4 nodes to use
-- **Band & Channel** - Set for each pilot (A, B, E, F, R, L bands)
-- **Pilot Name** - Optional name for voice announcements
-- **Frequency Display** - Shows calculated frequency automatically
-
-**General Settings:**
-- **Minimum Lap Time** - Prevent false laps (default: 4.0 seconds)
-- **Race Start Delay** - Countdown duration (default: 5.0 seconds)
-- **Low Battery Alarm** - Voltage threshold (2.8V - 4.0V, default: 3.4V)
-- **Announcer Type** - None / Beep / Lap Time / 2-Lap / 3-Lap
-- **Announcer Rate** - Speech speed (0.1 - 2.0x, default: 1.0)
-- **Voice Toggle** - Enable/disable voice announcements
-- **Battery Voltage** - Current battery level display
-
-**WiFi Settings** (hidden by default):
-- SSID and password customization
-
-**Important:** Click **Save Configuration** after changes!
-
-### Race Tab
-
-**Desktop View:**
-- Side-by-side lap tables for each active pilot
-- Full details: Lap number, Time, 3-Lap average
-- Individual pilot headers with names
-
-**Mobile View:**
-- **1 Node**: Traditional format (Lap | Time | 3-Lap)
-- **2-4 Nodes**: Compact table (Lap | N1 | N2 | N3 | N4)
-- Lap 0 shown for "Hole Shot" race start
-
-**Controls:**
-- **Start** - Begin race countdown and timing
-- **Stop** - Stop accepting new laps
-- **Reset** - Clear all lap times
-
-### Calibration Tab
-
-**For Each Active Node:**
-- **Real-time RSSI Graph** - Live signal strength visualization
-- **Enter RSSI** - Threshold to start lap crossing (number input + slider)
-- **Exit RSSI** - Threshold to complete lap crossing (number input + slider)
-- **Horizontal Lines** - Red (Enter) and yellow (Exit) indicators on graph
-- **Crossing State** - Visual feedback (green = crossing, blue = clear)
-
-**Graph Features:**
-- Auto-scaling based on Enter/Exit values
-- Kalman-filtered RSSI for smooth visualization
-- Real-time updates at 200ms intervals
-
-**Important:** Click **Save RSSI Thresholds** after calibration!
-
-### Footer Controls
-
-**Theme Selector:**
-- Ocean Teal (default)
-- Purple Haze
-- Cyber Cyan
-- Sunset Orange
-- Matrix Green
-- Saved to browser localStorage
 
 ---
 
@@ -475,115 +396,6 @@ Exit RSSI: 132 - 10 = 122
 - **Yellow Line** - Exit RSSI threshold
 
 **Ideal Setup:** Single sharp peak per pass, clearly above Enter threshold
-
----
-
-## Usage
-
-### Basic Racing
-
-1. **Configure Pilots** (Configuration tab)
-   - Set number of active nodes
-   - Configure band/channel for each pilot
-   - Set RSSI thresholds
-   - Save configuration
-
-2. **Calibrate** (Calibration tab)
-   - Test fly and adjust RSSI thresholds
-   - Verify graph shows clean peaks
-   - Save thresholds
-
-3. **Race** (Race tab)
-   - Click **Start** to begin countdown
-   - Fly laps - times appear automatically
-   - Click **Stop** when finished
-   - Click **Reset** to clear for next heat
-
-### Advanced Features
-
-**Voice Announcements:**
-- Enable "Voice: ON" in footer
-- Set pilot names in Configuration
-- Choose announcer type (1-lap, 2-lap, 3-lap)
-- Adjust speech rate if needed
-
-**Multiple Pilots:**
-- Set Active Nodes to 2, 3, or 4
-- Configure unique frequency for each pilot
-- Calibrate each node individually
-- Race tab shows all pilots side-by-side (desktop) or in compact table (mobile)
-
-**Battery Monitoring:**
-- Set low voltage alarm in Configuration
-- Current voltage shown in Configuration tab
-- Buzzer alerts when threshold reached
-
-**Mobile Racing:**
-- Portrait orientation recommended
-- Theme selector in footer
-- Simplified race table for multi-pilot view
-- All features fully functional
-
----
-
-## Technical Details
-
-### System Architecture
-
-**Backend (C++):**
-- `main.cpp` - Entry point, task management
-- `lib/RX5808/` - SPI communication, RSSI reading
-- `lib/LAPTIMER/` - Lap detection, timing logic
-- `lib/CONFIG/` - EEPROM storage, JSON serialization
-- `lib/WEBSERVER/` - HTTP server, WebSocket, SSE
-- `lib/KALMAN/` - RSSI filtering
-- `lib/BATTERY/` - Voltage monitoring
-- `lib/BUZZER/` - Audio feedback
-- `lib/LED/` - Visual feedback
-
-**Frontend (JavaScript/HTML/CSS):**
-- `data/index.html` - Single-page application structure
-- `data/script.js` - UI logic, WebSocket handling
-- `data/style.css` - Responsive design, themes
-- `data/smoothie.js` - Real-time RSSI charting
-- `data/articulate.min.js` - Text-to-speech engine
-
-**Communication:**
-- HTTP REST API for configuration
-- WebSocket for RSSI streaming
-- Server-Sent Events for lap notifications
-- JSON for data serialization
-
-### Memory Usage
-
-- EEPROM: ~256 bytes (configuration storage)
-- RAM: ~100KB (dual-core task management)
-- Flash: ~1MB (firmware + filesystem)
-
-### Performance
-
-- RSSI Sampling: ~200ms intervals (Kalman filtered)
-- Lap Detection: ~10ms precision
-- WebSocket Updates: 200ms intervals
-- Support: Up to 4 simultaneous nodes
-
----
-
-## Community & Support
-
-### Get Help
-- Ask questions about setup and usage
-- Share your timer builds
-- Report bugs and request features
-- Contribute improvements
-
-### Contributing
-Pull requests welcome! Areas for contribution:
-- Documentation improvements
-- UI/UX enhancements
-- Additional ESP32 board support
-- Performance optimizations
-- Bug fixes
 
 ---
 
