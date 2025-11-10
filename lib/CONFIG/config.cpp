@@ -5,10 +5,18 @@
 #include "debug.h"
 
 void Config::init(void) {
+    // Compile-time check to ensure config fits in EEPROM
+    static_assert(sizeof(laptimer_config_t) <= EEPROM_RESERVED_SIZE, 
+                  "Config structure exceeds EEPROM reserved size! Increase EEPROM_RESERVED_SIZE");
+    
     if (sizeof(laptimer_config_t) > EEPROM_RESERVED_SIZE) {
-        DEBUG("Config size too big, adjust reserved EEPROM size\n");
+        DEBUG("CRITICAL ERROR: Config size (%u bytes) exceeds EEPROM size (%u bytes)\n", 
+              sizeof(laptimer_config_t), EEPROM_RESERVED_SIZE);
         return;
     }
+
+    DEBUG("Config size: %u bytes, EEPROM reserved: %u bytes\n", 
+          sizeof(laptimer_config_t), EEPROM_RESERVED_SIZE);
 
     EEPROM.begin(EEPROM_RESERVED_SIZE);  // Size of EEPROM
     load();                              // Override default settings from EEPROM
@@ -47,28 +55,27 @@ void Config::write(void) {
 }
 
 void Config::populateJsonDocument(JsonDocument& config) {
-    config["freq"] = conf.frequency;
+    // General settings
     config["minLap"] = conf.minLap;
     config["raceStartDelay"] = conf.raceStartDelay;
     config["alarm"] = conf.alarm;
     config["anType"] = conf.announcerType;
     config["anRate"] = conf.announcerRate;
-    config["enterRssi"] = conf.enterRssi;
-    config["exitRssi"] = conf.exitRssi;
-    config["name"] = conf.pilotName;
-    config["freq2"] = conf.frequency2;
-    config["enterRssi2"] = conf.enterRssi2;
-    config["exitRssi2"] = conf.exitRssi2;
-    config["name2"] = conf.pilotName2;
-    config["freq3"] = conf.frequency3;
-    config["enterRssi3"] = conf.enterRssi3;
-    config["exitRssi3"] = conf.exitRssi3;
-    config["name3"] = conf.pilotName3;
-    config["freq4"] = conf.frequency4;
-    config["enterRssi4"] = conf.enterRssi4;
-    config["exitRssi4"] = conf.exitRssi4;
-    config["name4"] = conf.pilotName4;
     config["activeNodeCount"] = conf.activeNodeCount;
+    
+    // Node-specific settings (backward compatible naming)
+    config["freq"] = conf.frequency[0];
+    config["enterRssi"] = conf.enterRssi[0];
+    config["exitRssi"] = conf.exitRssi[0];
+    config["freq2"] = conf.frequency[1];
+    config["enterRssi2"] = conf.enterRssi[1];
+    config["exitRssi2"] = conf.exitRssi[1];
+    config["freq3"] = conf.frequency[2];
+    config["enterRssi3"] = conf.enterRssi[2];
+    config["exitRssi3"] = conf.exitRssi[2];
+    config["freq4"] = conf.frequency[3];
+    config["enterRssi4"] = conf.enterRssi[3];
+    config["exitRssi4"] = conf.exitRssi[3];
     
     // Frequency Hopping Configuration
     config["frequencyHoppingEnabled"] = conf.frequencyHoppingEnabled;
@@ -84,17 +91,22 @@ void Config::populateJsonDocument(JsonDocument& config) {
         }
     }
     
-    // Hopping pilot names as nested arrays
-    JsonArray hopNames = config["hoppingPilotNames"].to<JsonArray>();
+    // Hopping RSSI thresholds as nested arrays
+    JsonArray hopEnterRssi = config["hoppingEnterRssi"].to<JsonArray>();
+    JsonArray hopExitRssi = config["hoppingExitRssi"].to<JsonArray>();
     for (uint8_t nodeId = 0; nodeId < 4; nodeId++) {
-        JsonArray nodeNames = hopNames.add<JsonArray>();
+        JsonArray nodeEnterRssi = hopEnterRssi.add<JsonArray>();
+        JsonArray nodeExitRssi = hopExitRssi.add<JsonArray>();
         for (uint8_t freqIdx = 0; freqIdx < 4; freqIdx++) {
-            nodeNames.add(conf.hoppingPilotNames[nodeId][freqIdx]);
+            nodeEnterRssi.add(conf.hoppingEnterRssi[nodeId][freqIdx]);
+            nodeExitRssi.add(conf.hoppingExitRssi[nodeId][freqIdx]);
         }
     }
     
+    // WiFi and UI settings
     config["ssid"] = conf.ssid;
     config["pwd"] = conf.password;
+    config["theme"] = conf.theme;
 }
 
 void Config::toJson(AsyncResponseStream& destination) {
@@ -111,10 +123,7 @@ void Config::toJsonString(char* buf) {
 }
 
 void Config::fromJson(JsonObject source) {
-    if (source["freq"] != conf.frequency) {
-        conf.frequency = source["freq"];
-        modified = true;
-    }
+    // General settings
     if (source["minLap"] != conf.minLap) {
         conf.minLap = source["minLap"];
         modified = true;
@@ -135,73 +144,63 @@ void Config::fromJson(JsonObject source) {
         conf.announcerRate = source["anRate"];
         modified = true;
     }
-    if (source["enterRssi"] != conf.enterRssi) {
-        conf.enterRssi = source["enterRssi"];
-        modified = true;
-    }
-    if (source["exitRssi"] != conf.exitRssi) {
-        conf.exitRssi = source["exitRssi"];
-        modified = true;
-    }
-    if (source["name"] != conf.pilotName) {
-        strlcpy(conf.pilotName, source["name"] | "", sizeof(conf.pilotName));
-        modified = true;
-    }
-    if (source["freq2"] != conf.frequency2) {
-        conf.frequency2 = source["freq2"];
-        modified = true;
-    }
-    if (source["enterRssi2"] != conf.enterRssi2) {
-        conf.enterRssi2 = source["enterRssi2"];
-        modified = true;
-    }
-    if (source["exitRssi2"] != conf.exitRssi2) {
-        conf.exitRssi2 = source["exitRssi2"];
-        modified = true;
-    }
-    if (source["name2"] != conf.pilotName2) {
-        strlcpy(conf.pilotName2, source["name2"] | "", sizeof(conf.pilotName2));
-        modified = true;
-    }
-    if (source["freq3"] != conf.frequency3) {
-        conf.frequency3 = source["freq3"];
-        modified = true;
-    }
-    if (source["enterRssi3"] != conf.enterRssi3) {
-        conf.enterRssi3 = source["enterRssi3"];
-        modified = true;
-    }
-    if (source["exitRssi3"] != conf.exitRssi3) {
-        conf.exitRssi3 = source["exitRssi3"];
-        modified = true;
-    }
-    if (source["name3"] != conf.pilotName3) {
-        strlcpy(conf.pilotName3, source["name3"] | "", sizeof(conf.pilotName3));
-        modified = true;
-    }
-    if (source["freq4"] != conf.frequency4) {
-        conf.frequency4 = source["freq4"];
-        modified = true;
-    }
-    if (source["enterRssi4"] != conf.enterRssi4) {
-        conf.enterRssi4 = source["enterRssi4"];
-        modified = true;
-    }
-    if (source["exitRssi4"] != conf.exitRssi4) {
-        conf.exitRssi4 = source["exitRssi4"];
-        modified = true;
-    }
-    if (source["name4"] != conf.pilotName4) {
-        strlcpy(conf.pilotName4, source["name4"] | "", sizeof(conf.pilotName4));
-        modified = true;
-    }
     if (source["activeNodeCount"] != conf.activeNodeCount) {
         conf.activeNodeCount = source["activeNodeCount"];
         modified = true;
     }
     
+    // Node-specific settings (backward compatible)
+    if (source["freq"] != conf.frequency[0]) {
+        conf.frequency[0] = source["freq"];
+        modified = true;
+    }
+    if (source["enterRssi"] != conf.enterRssi[0]) {
+        conf.enterRssi[0] = source["enterRssi"];
+        modified = true;
+    }
+    if (source["exitRssi"] != conf.exitRssi[0]) {
+        conf.exitRssi[0] = source["exitRssi"];
+        modified = true;
+    }
+    if (source["freq2"] != conf.frequency[1]) {
+        conf.frequency[1] = source["freq2"];
+        modified = true;
+    }
+    if (source["enterRssi2"] != conf.enterRssi[1]) {
+        conf.enterRssi[1] = source["enterRssi2"];
+        modified = true;
+    }
+    if (source["exitRssi2"] != conf.exitRssi[1]) {
+        conf.exitRssi[1] = source["exitRssi2"];
+        modified = true;
+    }
+    if (source["freq3"] != conf.frequency[2]) {
+        conf.frequency[2] = source["freq3"];
+        modified = true;
+    }
+    if (source["enterRssi3"] != conf.enterRssi[2]) {
+        conf.enterRssi[2] = source["enterRssi3"];
+        modified = true;
+    }
+    if (source["exitRssi3"] != conf.exitRssi[2]) {
+        conf.exitRssi[2] = source["exitRssi3"];
+        modified = true;
+    }
+    if (source["freq4"] != conf.frequency[3]) {
+        conf.frequency[3] = source["freq4"];
+        modified = true;
+    }
+    if (source["enterRssi4"] != conf.enterRssi[3]) {
+        conf.enterRssi[3] = source["enterRssi4"];
+        modified = true;
+    }
+    if (source["exitRssi4"] != conf.exitRssi[3]) {
+        conf.exitRssi[3] = source["exitRssi4"];
+        modified = true;
+    }
+    
     // Frequency Hopping Configuration
-    if (source.containsKey("frequencyHoppingEnabled")) {
+    if (!source["frequencyHoppingEnabled"].isNull()) {
         bool newHoppingEnabled = source["frequencyHoppingEnabled"];
         if (newHoppingEnabled != conf.frequencyHoppingEnabled) {
             conf.frequencyHoppingEnabled = newHoppingEnabled;
@@ -209,7 +208,7 @@ void Config::fromJson(JsonObject source) {
         }
     }
     
-    if (source.containsKey("hoppingFreqCount")) {
+    if (!source["hoppingFreqCount"].isNull()) {
         uint8_t newHoppingFreqCount = source["hoppingFreqCount"];
         if (newHoppingFreqCount != conf.hoppingFreqCount) {
             conf.hoppingFreqCount = newHoppingFreqCount;
@@ -217,7 +216,7 @@ void Config::fromJson(JsonObject source) {
         }
     }
     
-    if (source.containsKey("hoppingInterval")) {
+    if (!source["hoppingInterval"].isNull()) {
         uint32_t newHoppingInterval = source["hoppingInterval"];
         if (newHoppingInterval != conf.hoppingInterval) {
             conf.hoppingInterval = newHoppingInterval;
@@ -225,7 +224,7 @@ void Config::fromJson(JsonObject source) {
         }
     }
     
-    if (source.containsKey("hoppingFrequencies")) {
+    if (!source["hoppingFrequencies"].isNull()) {
         JsonArray hopFreqs = source["hoppingFrequencies"];
         for (uint8_t nodeId = 0; nodeId < 4 && nodeId < hopFreqs.size(); nodeId++) {
             JsonArray nodeFreqs = hopFreqs[nodeId];
@@ -239,20 +238,36 @@ void Config::fromJson(JsonObject source) {
         }
     }
     
-    if (source.containsKey("hoppingPilotNames")) {
-        JsonArray hopNames = source["hoppingPilotNames"];
-        for (uint8_t nodeId = 0; nodeId < 4 && nodeId < hopNames.size(); nodeId++) {
-            JsonArray nodeNames = hopNames[nodeId];
-            for (uint8_t freqIdx = 0; freqIdx < 4 && freqIdx < nodeNames.size(); freqIdx++) {
-                const char* newName = nodeNames[freqIdx];
-                if (strcmp(newName, conf.hoppingPilotNames[nodeId][freqIdx]) != 0) {
-                    strlcpy(conf.hoppingPilotNames[nodeId][freqIdx], newName, sizeof(conf.hoppingPilotNames[nodeId][freqIdx]));
+    // Hopping RSSI thresholds
+    if (!source["hoppingEnterRssi"].isNull()) {
+        JsonArray hopEnterRssi = source["hoppingEnterRssi"];
+        for (uint8_t nodeId = 0; nodeId < 4 && nodeId < hopEnterRssi.size(); nodeId++) {
+            JsonArray nodeEnterRssi = hopEnterRssi[nodeId];
+            for (uint8_t freqIdx = 0; freqIdx < 4 && freqIdx < nodeEnterRssi.size(); freqIdx++) {
+                uint8_t newRssi = nodeEnterRssi[freqIdx];
+                if (newRssi != conf.hoppingEnterRssi[nodeId][freqIdx]) {
+                    conf.hoppingEnterRssi[nodeId][freqIdx] = newRssi;
                     modified = true;
                 }
             }
         }
     }
     
+    if (!source["hoppingExitRssi"].isNull()) {
+        JsonArray hopExitRssi = source["hoppingExitRssi"];
+        for (uint8_t nodeId = 0; nodeId < 4 && nodeId < hopExitRssi.size(); nodeId++) {
+            JsonArray nodeExitRssi = hopExitRssi[nodeId];
+            for (uint8_t freqIdx = 0; freqIdx < 4 && freqIdx < nodeExitRssi.size(); freqIdx++) {
+                uint8_t newRssi = nodeExitRssi[freqIdx];
+                if (newRssi != conf.hoppingExitRssi[nodeId][freqIdx]) {
+                    conf.hoppingExitRssi[nodeId][freqIdx] = newRssi;
+                    modified = true;
+                }
+            }
+        }
+    }
+    
+    // WiFi and UI settings
     if (source["ssid"] != conf.ssid) {
         strlcpy(conf.ssid, source["ssid"] | "", sizeof(conf.ssid));
         modified = true;
@@ -261,22 +276,18 @@ void Config::fromJson(JsonObject source) {
         strlcpy(conf.password, source["pwd"] | "", sizeof(conf.password));
         modified = true;
     }
+    if (source["theme"] != conf.theme) {
+        strlcpy(conf.theme, source["theme"] | "ocean", sizeof(conf.theme));
+        modified = true;
+    }
 }
 
-uint16_t Config::getFrequency() {
-    return conf.frequency;
-}
-
-uint16_t Config::getFrequency2() {
-    return conf.frequency2;
-}
-
-uint16_t Config::getFrequency3() {
-    return conf.frequency3;
-}
-
-uint16_t Config::getFrequency4() {
-    return conf.frequency4;
+// Getter implementations
+uint16_t Config::getFrequency(uint8_t nodeId) {
+    if (nodeId < 4) {
+        return conf.frequency[nodeId];
+    }
+    return 5740; // Default
 }
 
 uint32_t Config::getMinLapMs() {
@@ -291,36 +302,18 @@ uint8_t Config::getAlarmThreshold() {
     return conf.alarm;
 }
 
-uint8_t Config::getEnterRssi() {
-    return conf.enterRssi;
+uint8_t Config::getEnterRssi(uint8_t nodeId) {
+    if (nodeId < 4) {
+        return conf.enterRssi[nodeId];
+    }
+    return 120; // Default
 }
 
-uint8_t Config::getExitRssi() {
-    return conf.exitRssi;
-}
-
-uint8_t Config::getEnterRssi2() {
-    return conf.enterRssi2;
-}
-
-uint8_t Config::getExitRssi2() {
-    return conf.exitRssi2;
-}
-
-uint8_t Config::getEnterRssi3() {
-    return conf.enterRssi3;
-}
-
-uint8_t Config::getExitRssi3() {
-    return conf.exitRssi3;
-}
-
-uint8_t Config::getEnterRssi4() {
-    return conf.enterRssi4;
-}
-
-uint8_t Config::getExitRssi4() {
-    return conf.exitRssi4;
+uint8_t Config::getExitRssi(uint8_t nodeId) {
+    if (nodeId < 4) {
+        return conf.exitRssi[nodeId];
+    }
+    return 100; // Default
 }
 
 uint8_t Config::getActiveNodeCount() {
@@ -346,12 +339,18 @@ uint16_t Config::getHoppingFrequency(uint8_t nodeId, uint8_t freqIndex) {
     return 5740; // Default frequency
 }
 
-char* Config::getHoppingPilotName(uint8_t nodeId, uint8_t freqIndex) {
+uint8_t Config::getHoppingEnterRssi(uint8_t nodeId, uint8_t freqIndex) {
     if (nodeId < 4 && freqIndex < 4) {
-        return conf.hoppingPilotNames[nodeId][freqIndex];
+        return conf.hoppingEnterRssi[nodeId][freqIndex];
     }
-    static char empty[] = "";
-    return empty;
+    return 120; // Default
+}
+
+uint8_t Config::getHoppingExitRssi(uint8_t nodeId, uint8_t freqIndex) {
+    if (nodeId < 4 && freqIndex < 4) {
+        return conf.hoppingExitRssi[nodeId][freqIndex];
+    }
+    return 100; // Default
 }
 
 char* Config::getSsid() {
@@ -362,56 +361,51 @@ char* Config::getPassword() {
     return conf.password;
 }
 
+char* Config::getTheme() {
+    return conf.theme;
+}
+
 void Config::setDefaults(void) {
     DEBUG("Setting EEPROM defaults\n");
     // Reset everything to 0/false and then just set anything that zero is not appropriate
     memset(&conf, 0, sizeof(conf));
+    
     conf.version = CONFIG_VERSION | CONFIG_MAGIC;
-    conf.frequency = 1111;
+    
+    // General settings
     conf.minLap = 40;  // 4 seconds (value * 100ms)
     conf.raceStartDelay = 50;  // 5 seconds (value * 100ms)
     conf.alarm = 34;  // 3.4v (value / 10)
     conf.announcerType = 2;
     conf.announcerRate = 10;
-    conf.enterRssi = 120;
-    conf.exitRssi = 100;
-    conf.frequency2 = 1111;
-    conf.enterRssi2 = 120;
-    conf.exitRssi2 = 100;
-    conf.frequency3 = 1111;
-    conf.enterRssi3 = 120;
-    conf.exitRssi3 = 100;
-    conf.frequency4 = 1111;
-    conf.enterRssi4 = 120;
-    conf.exitRssi4 = 100;
-    conf.activeNodeCount = 2;  // Default to 2 nodes
+    conf.activeNodeCount = 1;  // Default to 1 node
+    
+    // Node-specific defaults
+    for (uint8_t i = 0; i < 4; i++) {
+        conf.frequency[i] = 5740;  // Default frequency
+        conf.enterRssi[i] = 120;
+        conf.exitRssi[i] = 100;
+    }
     
     // Frequency Hopping Defaults
     conf.frequencyHoppingEnabled = false;
     conf.hoppingFreqCount = 4;
     conf.hoppingInterval = 100;  // 100ms default switching time
-    // Initialize hopping frequencies to default (5740 MHz) and pilot names with dynamic numbering
-    // Pilot numbering is based on hoppingFreqCount:
-    // 2 freqs: Node 1 = P1-P2, Node 2 = P3-P4, Node 3 = P5-P6, Node 4 = P7-P8
-    // 3 freqs: Node 1 = P1-P3, Node 2 = P4-P6, Node 3 = P7-P9, Node 4 = P10-P12
-    // 4 freqs: Node 1 = P1-P4, Node 2 = P5-P8, Node 3 = P9-P12, Node 4 = P13-P16
+    
+    // Initialize hopping frequencies and RSSI thresholds
     for (uint8_t nodeId = 0; nodeId < 4; nodeId++) {
         for (uint8_t freqIdx = 0; freqIdx < 4; freqIdx++) {
             conf.hoppingFrequencies[nodeId][freqIdx] = 5740;
-            // Calculate global pilot number based on hoppingFreqCount
-            uint8_t globalPilotNumber = nodeId * conf.hoppingFreqCount + freqIdx + 1;
-            char label[4];
-            snprintf(label, sizeof(label), "P%d", globalPilotNumber);
-            strlcpy(conf.hoppingPilotNames[nodeId][freqIdx], label, sizeof(conf.hoppingPilotNames[nodeId][freqIdx]));
+            conf.hoppingEnterRssi[nodeId][freqIdx] = 120;
+            conf.hoppingExitRssi[nodeId][freqIdx] = 100;
         }
     }
     
+    // WiFi and UI settings
     strlcpy(conf.ssid, "", sizeof(conf.ssid));
     strlcpy(conf.password, "", sizeof(conf.password));
-    strlcpy(conf.pilotName, "", sizeof(conf.pilotName));
-    strlcpy(conf.pilotName2, "", sizeof(conf.pilotName2));
-    strlcpy(conf.pilotName3, "", sizeof(conf.pilotName3));
-    strlcpy(conf.pilotName4, "", sizeof(conf.pilotName4));
+    strlcpy(conf.theme, "ocean", sizeof(conf.theme));  // Default to first theme option
+    
     modified = true;
     write();
 }

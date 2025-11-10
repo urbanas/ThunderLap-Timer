@@ -5,7 +5,8 @@
 const uint16_t rssi_filter_q = 2000;  //  0.01 - 655.36
 const uint16_t rssi_filter_r = 40;    // 0.0001 - 65.536
 
-void LapTimer::init(Config *config, RX5808 *rx5808, Buzzer *buzzer, Led *l) {
+void LapTimer::init(Config *config, RX5808 *rx5808, Buzzer *buzzer, Led *l, uint8_t id) {
+    this->nodeId = id;
     conf = config;
     rx = rx5808;
     buz = buzzer;
@@ -45,6 +46,22 @@ void LapTimer::handleLapTimerUpdate(uint32_t currentTimeMs) {
     // always read RSSI
     rssi[rssiCount] = round(filter.filter(rx->readRssi(), 0));
     // DEBUG("RSSI: %u\n", rssi[rssiCount]);
+    
+    // Handle auto-calibration if active
+    if (autoCalState == AUTOCAL_ACTIVE) {
+        autoCalPeakCapture();
+        
+        // Check if we detected a peak and enough time has passed to finish this pass
+        if (autoCalPeakDetected && rssi[rssiCount] < autoCalMinRssi + 5) {
+            // RSSI has dropped back down, finish this pass
+            if (currentTimeMs - autoCalLastDetectionMs > 2000) {  // 2 second cooldown between passes
+                autoCalFinishPass();
+            }
+        }
+        
+        rssiCount = (rssiCount + 1) % LAPTIMER_RSSI_HISTORY;
+        return;
+    }
 
     switch (state) {
         case STOPPED:
@@ -77,7 +94,7 @@ void LapTimer::handleLapTimerUpdate(uint32_t currentTimeMs) {
 
 void LapTimer::lapPeakCapture() {
     // Check if RSSI is on or post threshold, update RSSI peak
-    if (rssi[rssiCount] >= conf->getEnterRssi()) {
+    if (rssi[rssiCount] >= conf->getEnterRssi(nodeId)) {
         // Check if RSSI is greater than the previous detected peak
         if (rssi[rssiCount] > rssiPeak) {
             rssiPeak = rssi[rssiCount];
@@ -87,7 +104,7 @@ void LapTimer::lapPeakCapture() {
 }
 
 bool LapTimer::lapPeakCaptured() {
-    return (rssi[rssiCount] < rssiPeak) && (rssi[rssiCount] < conf->getExitRssi());
+    return (rssi[rssiCount] < rssiPeak) && (rssi[rssiCount] < conf->getExitRssi(nodeId));
 }
 
 void LapTimer::startLap() {
@@ -137,6 +154,10 @@ bool LapTimer::isLapAvailable() {
     return lapAvailable;
 }
 
+bool LapTimer::isRunning() {
+    return state == RUNNING;
+}
+
 // Frequency Hopping Implementation
 void LapTimer::setHoppingEnabled(bool enabled) {
     hoppingEnabled = enabled;
@@ -180,7 +201,8 @@ void LapTimer::updateHoppingFrequency(uint32_t currentTimeMs) {
         uint16_t newFreq = hoppingFrequencies[currentHoppingIndex];
         rx->setFrequency(newFreq);
         
-        DEBUG("Hopping to frequency %u (index %u)\n", newFreq, currentHoppingIndex);
+        DEBUG("Node %u: Hopping to frequency %u MHz (slot %u/%u)\n", 
+              nodeId + 1, newFreq, currentHoppingIndex + 1, hoppingFreqCount);
     }
 }
 
@@ -188,6 +210,128 @@ void LapTimer::setFrequency(uint16_t frequency) {
     if (rx) {
         rx->setFrequency(frequency);
         DEBUG("Manual frequency set to: %u MHz\n", frequency);
+    }
+}
+
+// Auto-calibration implementation
+void LapTimer::startAutoCalibration() {
+    DEBUG("Starting auto-calibration\n");
+    autoCalState = AUTOCAL_ACTIVE;
+    autoCalPassCount = 0;
+    autoCalMinRssi = 255;
+    autoCalPeakDetected = false;
+    autoCalLastDetectionMs = 0;
+    memset(autoCalPeaks, 0, sizeof(autoCalPeaks));
+    rssiPeak = 0;
+    buz->beep(300);
+    led->blink(200, 200);
+}
+
+void LapTimer::stopAutoCalibration() {
+    DEBUG("Stopping auto-calibration\n");
+    autoCalState = AUTOCAL_IDLE;
+    autoCalPassCount = 0;
+    autoCalPeakDetected = false;
+    led->off();
+    buz->beep(200);
+}
+
+bool LapTimer::isAutoCalibrating() {
+    return autoCalState == AUTOCAL_ACTIVE;
+}
+
+uint8_t LapTimer::getAutoCalPass() {
+    return autoCalPassCount;
+}
+
+uint8_t LapTimer::getAutoCalPeakRssi(uint8_t passIndex) {
+    if (passIndex < AUTOCAL_MAX_PASSES) {
+        return autoCalPeaks[passIndex];
+    }
+    return 0;
+}
+
+uint8_t LapTimer::getAutoCalMinRssi() {
+    return autoCalMinRssi;
+}
+
+uint8_t LapTimer::getAutoCalCalculatedEnter() {
+    if (autoCalPassCount == 0) return 0;
+    
+    // Find minimum peak across all passes
+    uint8_t minPeak = 255;
+    for (uint8_t i = 0; i < autoCalPassCount; i++) {
+        if (autoCalPeaks[i] < minPeak && autoCalPeaks[i] > 0) {
+            minPeak = autoCalPeaks[i];
+        }
+    }
+    
+    // Set ENTER threshold 5-10 points below minimum peak
+    if (minPeak > autoCalEnterThreshold) {
+        return minPeak - autoCalEnterThreshold;
+    }
+    return minPeak > 5 ? minPeak - 5 : 0;
+}
+
+uint8_t LapTimer::getAutoCalCalculatedExit() {
+    uint8_t enterValue = getAutoCalCalculatedEnter();
+    
+    // Set EXIT threshold 10-15 points below ENTER
+    if (enterValue > autoCalExitThreshold) {
+        return enterValue - autoCalExitThreshold;
+    }
+    return enterValue > 10 ? enterValue - 10 : 0;
+}
+
+void LapTimer::autoCalPeakCapture() {
+    uint8_t currentRssi = rssi[rssiCount];
+    
+    // Track minimum baseline RSSI
+    if (currentRssi < autoCalMinRssi) {
+        autoCalMinRssi = currentRssi;
+        DEBUG("Auto-cal new baseline: %u\n", autoCalMinRssi);
+    }
+    
+    // Calculate dynamic detection threshold
+    uint8_t detectionLevel = autoCalMinRssi + autoCalDetectionThreshold;
+    
+    // Detect peaks (significant rise above baseline)
+    if (currentRssi > detectionLevel) {
+        if (currentRssi > rssiPeak) {
+            rssiPeak = currentRssi;
+            rssiPeakTimeMs = millis();
+            autoCalPeakDetected = true;
+            DEBUG("Auto-cal peak detected: %u (baseline: %u, threshold: %u, delta: %u)\n", 
+                  rssiPeak, autoCalMinRssi, detectionLevel, rssiPeak - autoCalMinRssi);
+        }
+    }
+}
+
+void LapTimer::autoCalFinishPass() {
+    if (autoCalPassCount < AUTOCAL_MAX_PASSES && rssiPeak > 0) {
+        autoCalPeaks[autoCalPassCount] = rssiPeak;
+        autoCalPassCount++;
+        autoCalLastDetectionMs = millis();
+        
+        DEBUG("Auto-cal pass %u complete, peak: %u\n", autoCalPassCount, rssiPeak);
+        
+        // Reset for next pass
+        rssiPeak = 0;
+        rssiPeakTimeMs = 0;
+        autoCalPeakDetected = false;
+        
+        // Provide feedback
+        buz->beep(100);
+        led->on(200);
+        
+        // Check if calibration is complete
+        if (autoCalPassCount >= AUTOCAL_MAX_PASSES) {
+            autoCalState = AUTOCAL_COMPLETE;
+            DEBUG("Auto-calibration complete!\n");
+            DEBUG("Calculated ENTER: %u, EXIT: %u\n", getAutoCalCalculatedEnter(), getAutoCalCalculatedExit());
+            buz->beep(500);
+            led->on(1000);
+        }
     }
 }
 

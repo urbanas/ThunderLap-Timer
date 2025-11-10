@@ -98,47 +98,41 @@
 
 #endif
 
-#define EEPROM_RESERVED_SIZE 256
+#define EEPROM_RESERVED_SIZE 576
 #define CONFIG_MAGIC_MASK (0b11U << 30)
 #define CONFIG_MAGIC (0b01U << 30)
-#define CONFIG_VERSION 0U
+#define CONFIG_VERSION 1U
 
 #define EEPROM_CHECK_TIME_MS 1000
 
 typedef struct {
     uint32_t version;
-    uint16_t frequency;
+    
+    // General settings
     uint8_t minLap;
     uint8_t raceStartDelay;
     uint8_t alarm;
     uint8_t announcerType;
     uint8_t announcerRate;
-    uint8_t enterRssi;
-    uint8_t exitRssi;
-    char pilotName[21];
-    uint16_t frequency2;
-    uint8_t enterRssi2;
-    uint8_t exitRssi2;
-    char pilotName2[21];
-    uint16_t frequency3;
-    uint8_t enterRssi3;
-    uint8_t exitRssi3;
-    char pilotName3[21];
-    uint16_t frequency4;
-    uint8_t enterRssi4;
-    uint8_t exitRssi4;
-    char pilotName4[21];
     uint8_t activeNodeCount;  // Number of active nodes (1-4)
+    
+    // Node-specific settings (normal mode)
+    uint16_t frequency[4];      // Frequency for each node
+    uint8_t enterRssi[4];       // Enter RSSI for each node
+    uint8_t exitRssi[4];        // Exit RSSI for each node
     
     // Frequency Hopping Configuration
     bool frequencyHoppingEnabled;
     uint8_t hoppingFreqCount;  // 2-4 frequencies per node
     uint32_t hoppingInterval;  // Frequency switching time in milliseconds
     uint16_t hoppingFrequencies[4][4];  // [nodeId][freqIndex] - up to 4 frequencies per 4 nodes
-    char hoppingPilotNames[4][4][21];  // [nodeId][freqIndex][name] - pilot names for each hopping frequency
+    uint8_t hoppingEnterRssi[4][4];     // [nodeId][freqIndex] - Enter RSSI for each hopping frequency
+    uint8_t hoppingExitRssi[4][4];      // [nodeId][freqIndex] - Exit RSSI for each hopping frequency
     
+    // WiFi and UI settings
     char ssid[33];
     char password[33];
+    char theme[10];  // UI theme: "ocean", "purple", "cyan", "orange", "green"
 } laptimer_config_t;
 
 class Config {
@@ -152,29 +146,22 @@ class Config {
     void handleEeprom(uint32_t currentTimeMs);
 
     // getters and setters
-    uint16_t getFrequency();
-    uint16_t getFrequency2();
-    uint16_t getFrequency3();
-    uint16_t getFrequency4();
+    uint16_t getFrequency(uint8_t nodeId = 0);  // nodeId 0-3
     uint32_t getMinLapMs();
     uint32_t getRaceStartDelayMs();
     uint8_t getAlarmThreshold();
-    uint8_t getEnterRssi();
-    uint8_t getExitRssi();
-    uint8_t getEnterRssi2();
-    uint8_t getExitRssi2();
-    uint8_t getEnterRssi3();
-    uint8_t getExitRssi3();
-    uint8_t getEnterRssi4();
-    uint8_t getExitRssi4();
+    uint8_t getEnterRssi(uint8_t nodeId = 0);    // nodeId 0-3
+    uint8_t getExitRssi(uint8_t nodeId = 0);     // nodeId 0-3
     uint8_t getActiveNodeCount();
     bool getFrequencyHoppingEnabled();
     uint8_t getHoppingFreqCount();
     uint32_t getHoppingInterval();
     uint16_t getHoppingFrequency(uint8_t nodeId, uint8_t freqIndex);
-    char* getHoppingPilotName(uint8_t nodeId, uint8_t freqIndex);
+    uint8_t getHoppingEnterRssi(uint8_t nodeId, uint8_t freqIndex);
+    uint8_t getHoppingExitRssi(uint8_t nodeId, uint8_t freqIndex);
     char* getSsid();
     char* getPassword();
+    char* getTheme();
 
    private:
     laptimer_config_t conf;

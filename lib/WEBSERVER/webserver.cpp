@@ -350,6 +350,7 @@ Battery Voltage:\t%0.1fv";
         DEBUG("\n");
 #endif
         conf->fromJson(jsonObj);
+        conf->write();  // Immediately write to EEPROM to ensure persistence
         request->send(200, "application/json", "{\"status\": \"OK\"}");
         led->on(200);
     });
@@ -418,6 +419,88 @@ Battery Voltage:\t%0.1fv";
         request->send(200, "application/json", "{\"status\":\"resumed\"}");
         
         DEBUG("Hopping resumed\n");
+        led->on(50);
+    });
+    
+    // Auto-calibration endpoints
+    server->on("/autoCal/start", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        uint8_t node = 1;
+        if (request->hasParam("node", true)) {
+            node = request->getParam("node", true)->value().toInt();
+        }
+        
+        // Start auto-calibration for the specified node
+        switch (node) {
+            case 1: timer1->startAutoCalibration(); break;
+            case 2: timer2->startAutoCalibration(); break;
+            case 3: timer3->startAutoCalibration(); break;
+            case 4: timer4->startAutoCalibration(); break;
+            default: break;
+        }
+        
+        char json[100];
+        snprintf(json, sizeof(json), "{\"status\":\"started\",\"node\":%u}", node);
+        request->send(200, "application/json", json);
+        
+        DEBUG("Auto-calibration started for node %u\n", node);
+    });
+    
+    server->on("/autoCal/stop", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        uint8_t node = 1;
+        if (request->hasParam("node", true)) {
+            node = request->getParam("node", true)->value().toInt();
+        }
+        
+        // Stop auto-calibration for the specified node
+        switch (node) {
+            case 1: timer1->stopAutoCalibration(); break;
+            case 2: timer2->stopAutoCalibration(); break;
+            case 3: timer3->stopAutoCalibration(); break;
+            case 4: timer4->stopAutoCalibration(); break;
+            default: break;
+        }
+        
+        request->send(200, "application/json", "{\"status\":\"stopped\"}");
+        
+        DEBUG("Auto-calibration stopped for node %u\n", node);
+    });
+    
+    server->on("/autoCal/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        uint8_t node = 1;
+        if (request->hasParam("node")) {
+            node = request->getParam("node")->value().toInt();
+        }
+        
+        LapTimer* timer = nullptr;
+        switch (node) {
+            case 1: timer = timer1; break;
+            case 2: timer = timer2; break;
+            case 3: timer = timer3; break;
+            case 4: timer = timer4; break;
+            default: break;
+        }
+        
+        if (timer) {
+            char json[400];
+            snprintf(json, sizeof(json), 
+                "{\"active\":%s,\"pass\":%u,\"minRssi\":%u,\"currentRssi\":%u,\"calculatedEnter\":%u,\"calculatedExit\":%u,\"peaks\":[%u,%u,%u,%u,%u]}",
+                timer->isAutoCalibrating() ? "true" : "false",
+                timer->getAutoCalPass(),
+                timer->getAutoCalMinRssi(),
+                timer->getRssi(),
+                timer->getAutoCalCalculatedEnter(),
+                timer->getAutoCalCalculatedExit(),
+                timer->getAutoCalPeakRssi(0),
+                timer->getAutoCalPeakRssi(1),
+                timer->getAutoCalPeakRssi(2),
+                timer->getAutoCalPeakRssi(3),
+                timer->getAutoCalPeakRssi(4)
+            );
+            request->send(200, "application/json", json);
+        } else {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid node\"}");
+        }
+        
         led->on(50);
     });
 

@@ -10,6 +10,7 @@ class RX5808 {
     RX5808(uint8_t _rssiInputPin, uint8_t _rx5808DataPin, uint8_t _rx5808SelPin, uint8_t _rx5808ClkPin);
     void init();
     void setFrequency(uint16_t frequency);
+    uint16_t getFrequency();
     uint8_t readRssi();
     void handleFrequencyChange(uint32_t currentTimeMs, uint16_t potentiallyNewFreq);
 

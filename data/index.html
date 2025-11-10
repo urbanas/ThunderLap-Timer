@@ -32,18 +32,18 @@
           <h3>Pilot Configuration</h3>
           <div class="node-cards-container">
             <!-- Node 1 Card -->
-            <div class="node-card">
+            <div class="node-card node-1">
               <div class="node-card-header">Node 1</div>
               <div class="node-card-body">
                 <div class="node-field">
                   <label for="bandSelect">Band:</label>
                   <select id="bandSelect">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
+                    <option value="A">Band A (Airwave)</option>
+                    <option value="B">Band B (Boscam B)</option>
+                    <option value="E">Band E (Boscam E)</option>
+                    <option value="F">Band F (Fatshark)</option>
+                    <option value="R">Band R (Raceband)</option>
+                    <option value="L">Band L (Lowband)</option>
                   </select>
                 </div>
                 <div class="node-field">
@@ -67,18 +67,18 @@
             </div>
 
             <!-- Node 2 Card -->
-            <div class="node-card">
+            <div class="node-card node-2">
               <div class="node-card-header">Node 2</div>
               <div class="node-card-body">
                 <div class="node-field">
                   <label for="bandSelect2">Band:</label>
                   <select id="bandSelect2">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
+                    <option value="A">Band A (Airwave)</option>
+                    <option value="B">Band B (Boscam B)</option>
+                    <option value="E">Band E (Boscam E)</option>
+                    <option value="F">Band F (Fatshark)</option>
+                    <option value="R">Band R (Raceband)</option>
+                    <option value="L">Band L (Lowband)</option>
                   </select>
                 </div>
                 <div class="node-field">
@@ -108,12 +108,12 @@
                 <div class="node-field">
                   <label for="bandSelect3">Band:</label>
                   <select id="bandSelect3">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
+                    <option value="A">Band A (Airwave)</option>
+                    <option value="B">Band B (Boscam B)</option>
+                    <option value="E">Band E (Boscam E)</option>
+                    <option value="F">Band F (Fatshark)</option>
+                    <option value="R">Band R (Raceband)</option>
+                    <option value="L">Band L (Lowband)</option>
                   </select>
                 </div>
                 <div class="node-field">
@@ -143,12 +143,12 @@
                 <div class="node-field">
                   <label for="bandSelect4">Band:</label>
                   <select id="bandSelect4">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="R">R</option>
-                    <option value="L">L</option>
+                    <option value="A">Band A (Airwave)</option>
+                    <option value="B">Band B (Boscam B)</option>
+                    <option value="E">Band E (Boscam E)</option>
+                    <option value="F">Band F (Fatshark)</option>
+                    <option value="R">Band R (Raceband)</option>
+                    <option value="L">Band L (Lowband)</option>
                   </select>
                 </div>
                 <div class="node-field">
@@ -182,8 +182,8 @@
               <div class="config-item">
                 <label for="activeNodeCount">Active Nodes:</label>
                 <select id="activeNodeCount" onchange="updateActiveNodeCount(this.value)">
-                  <option value="1">1 Node</option>
-                  <option value="2" selected>2 Nodes</option>
+                  <option value="1" selected>1 Node</option>
+                  <option value="2">2 Nodes</option>
                   <option value="3">3 Nodes</option>
                   <option value="4">4 Nodes</option>
                 </select>
@@ -203,9 +203,9 @@
               <div id="hoppingConfig" class="config-item" style="display: none;">
                 <label for="hoppingFreqCount">Frequencies per Node:</label>
                 <select id="hoppingFreqCount" onchange="updateHoppingFreqCount(this.value)">
-                  <option value="2">2 Frequencies</option>
+                  <option value="2" selected>2 Frequencies</option>
                   <option value="3">3 Frequencies</option>
-                  <option value="4" selected>4 Frequencies</option>
+                  <option value="4">4 Frequencies</option>
                 </select>
               </div>
 
@@ -332,153 +332,146 @@
       </div>
 
       <div id="calib" class="tabcontent">
-        <!-- Normal Calibration Mode - Node Selector -->
-        <div id="normalCalibrationControls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px; margin-bottom: 20px; background: var(--bg-card); border-radius: var(--radius-sm);">
+        <!-- Unified Calibration Controls -->
+        <div id="calibrationControls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: var(--radius-sm); border: 2px solid var(--primary-color);">
+          <!-- Node Selector -->
           <div style="display: flex; align-items: center; gap: 8px;">
-            <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Select Node to Calibrate:</label>
-            <select id="normalCalibNodeSelect" onchange="switchNormalCalibrationNode(this.value)" style="padding: 8px 16px; min-width: 120px; font-size: 14px;">
-              <!-- Options will be populated dynamically -->
+            <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Node:</label>
+            <select id="calibNodeSelect" onchange="switchCalibration()" style="padding: 8px 16px; min-width: 120px; font-size: 14px; border: 2px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-main); color: var(--text-primary);">
+              <!-- Options populated dynamically -->
             </select>
           </div>
-        </div>
-        
-        
-        <!-- Hopping Calibration Mode Controls -->
-        <div id="hoppingCalibrationControls" style="display: none; padding: 16px; margin-bottom: 20px; background: var(--bg-card); border: 2px solid var(--primary-color); border-radius: var(--radius-sm);">
-          <div style="margin-bottom: 16px;">
-            <strong style="color: var(--primary-color); font-size: 16px;">⚡ Frequency Hopping Calibration</strong>
-            <p style="margin: 8px 0 0 0; color: var(--text-secondary); font-size: 13px;">
-              Each RX5808 module switches between <span id="hoppingFreqCountDisplay">4</span> frequencies. Select a pilot below to calibrate their RSSI thresholds.
-            </p>
+          
+          <!-- Frequency/Pilot Selector (shown only when hopping is enabled) -->
+          <div id="calibFreqSelectorWrapper" style="display: none; align-items: center; gap: 8px;">
+            <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Frequency:</label>
+            <select id="calibFreqSelect" onchange="switchCalibration()" style="padding: 8px 16px; min-width: 180px; font-size: 14px; border: 2px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-main); color: var(--text-primary);">
+              <!-- Options populated dynamically -->
+            </select>
           </div>
           
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px; background: var(--bg-main); border-radius: var(--radius-sm);">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Node:</label>
-              <select id="calibNodeSelect" onchange="switchCalibrationNode(this.value)" style="padding: 8px 12px; min-width: 120px; font-size: 14px;">
-                <!-- Options will be populated dynamically -->
-              </select>
+          <!-- Current Calibration Info -->
+          <div style="flex: 1; min-width: 250px; padding: 10px 16px; background: var(--bg-main); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-color);">
+            <span style="color: var(--text-secondary); font-size: 12px;">Calibrating: </span>
+            <span id="currentCalibInfo" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">Node 1 @ 5740 MHz</span>
+          </div>
+          
+          <!-- Auto-Calibration Button -->
+          <button id="autoCalBtn" onclick="toggleAutoCalibration()" style="padding: 10px 20px; background: var(--success-gradient); color: white; border: none; border-radius: var(--radius-sm); font-weight: bold; cursor: pointer; font-size: 14px; white-space: nowrap;">
+            🤖 Auto-Calibrate
+          </button>
+        </div>
+        
+        <!-- Auto-Calibration Status (hidden by default) -->
+        <div id="autoCalStatus" style="display: none; margin-bottom: 20px; padding: 16px; background: var(--bg-card); border: 2px solid var(--success-color); border-radius: var(--radius-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="margin: 0; color: var(--success-color);">🤖 Auto-Calibration Active</h4>
+            <button onclick="stopAutoCalibration()" style="padding: 6px 16px; background: var(--error-color); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: bold;">
+              Stop
+            </button>
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: var(--text-secondary); font-size: 13px;">Pass <span id="autoCalPass">0</span> of 5</span>
+              <span id="autoCalPassStatus" style="color: var(--text-secondary); font-size: 13px;">Waiting for drone...</span>
             </div>
-            
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <label style="color: var(--text-secondary); font-size: 14px; font-weight: bold;">Pilot:</label>
-              <select id="calibPilotSelect" onchange="switchCalibrationPilot(this.value)" style="padding: 8px 12px; min-width: 150px; font-size: 14px;">
-                <!-- Options will be populated dynamically -->
-              </select>
-            </div>
-            
-            <div style="flex: 1; min-width: 200px; padding: 8px 12px; background: var(--bg-card); border-radius: var(--radius-sm); border-left: 3px solid var(--primary-color);">
-              <span style="color: var(--text-secondary); font-size: 12px;">Calibrating: </span>
-              <span id="currentCalibPilot" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">P1</span>
-              <span style="color: var(--text-secondary); font-size: 12px;"> @ </span>
-              <span id="currentCalibFreq" style="color: var(--accent-color); font-weight: bold; font-size: 14px;">5740</span>
-              <span style="color: var(--text-secondary); font-size: 12px;"> MHz</span>
+            <div style="width: 100%; height: 8px; background: var(--bg-main); border-radius: 4px; overflow: hidden;">
+              <div id="autoCalProgress" style="width: 0%; height: 100%; background: var(--success-gradient); transition: width 0.3s;"></div>
             </div>
           </div>
           
-          <div style="margin-top: 12px; padding: 10px; background: var(--bg-main); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary);">
-            <strong>Tip:</strong> When you select a pilot, hopping pauses on that frequency. Adjust the RSSI Enter/Exit sliders below, then switch to the next pilot.
+          <!-- Real-time RSSI Display -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <div style="padding: 8px; background: var(--bg-main); border-radius: var(--radius-sm); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">CURRENT RSSI</div>
+              <div id="autoCalCurrentRssi" style="font-size: 20px; font-weight: bold; color: var(--primary-color);">0</div>
+            </div>
+            <div style="padding: 8px; background: var(--bg-main); border-radius: var(--radius-sm); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">BASELINE</div>
+              <div id="autoCalBaselineRssi" style="font-size: 20px; font-weight: bold; color: var(--text-secondary);">0</div>
+            </div>
+            <div style="padding: 8px; background: var(--bg-main); border-radius: var(--radius-sm); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">DETECTION LEVEL</div>
+              <div id="autoCalDetectionLevel" style="font-size: 20px; font-weight: bold; color: var(--warning-color);">0</div>
+            </div>
           </div>
+          
+          <!-- Peak Badges -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+            <span class="peak-badge" id="peak1">Pass 1: --</span>
+            <span class="peak-badge" id="peak2">Pass 2: --</span>
+            <span class="peak-badge" id="peak3">Pass 3: --</span>
+            <span class="peak-badge" id="peak4">Pass 4: --</span>
+            <span class="peak-badge" id="peak5">Pass 5: --</span>
+          </div>
+          
+          <!-- Results Display -->
+          <div id="autoCalResults" style="display: none; padding: 12px; background: var(--bg-main); border-radius: var(--radius-sm); margin-top: 12px;">
+            <h4 style="margin: 0 0 8px 0; color: var(--success-color);">✅ Calibration Complete!</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <span style="color: var(--text-secondary); font-size: 13px;">Recommended Enter RSSI:</span>
+                <div id="autoCalEnterResult" style="font-size: 18px; font-weight: bold; color: var(--success-color);">120</div>
+              </div>
+              <div>
+                <span style="color: var(--text-secondary); font-size: 13px;">Recommended Exit RSSI:</span>
+                <div id="autoCalExitResult" style="font-size: 18px; font-weight: bold; color: var(--success-color);">100</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="applyAutoCalResults()" style="flex: 1; padding: 8px; background: var(--success-color); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: bold;">
+                Apply Values
+              </button>
+              <button onclick="discardAutoCalResults()" style="flex: 1; padding: 8px; background: var(--bg-gradient-2); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer;">
+                Discard
+              </button>
+            </div>
+          </div>
+          
+          <p style="margin: 12px 0 0 0; font-size: 13px; color: var(--text-secondary); font-style: italic;">
+            Fly your drone through the gate 5 times. Keep a consistent distance and speed.
+          </p>
         </div>
         
-        <div class="calib-section node-1">
-          <h3>
-            Node 1 - RSSI Calibration
-            <span id="debugFreq1" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq1">5740</span> MHz</span>
+        <!-- Single RSSI Chart -->
+        <div style="margin-bottom: 20px; padding: 20px; background: var(--bg-card); border-radius: var(--radius-sm);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">
+            <span id="calibChartTitle">Node 1</span> - RSSI Monitor
+            <span id="calibCurrentFreq" style="margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: 5740 MHz</span>
           </h3>
           <div class="chart-container">
-            <canvas id="rssiChart" width="800" height="250"></canvas>
-          </div>
-          <div class="config-item">
-            <label for="enter">Enter RSSI:</label>
-            <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="enterInput" value="120" oninput="updateEnterRssi(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="enter" value="120" oninput="updateEnterRssi(this,value)" />
-            </div>
-          </div>
-          <div class="config-item">
-            <label for="exit">Exit RSSI:</label>
-            <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="exitInput" value="100" oninput="updateExitRssi(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="exit" value="100" oninput="updateExitRssi(this,value)" />
-            </div>
+            <canvas id="calibRssiChart" width="800" height="250"></canvas>
           </div>
         </div>
         
-        <div class="calib-section node-2">
-          <h3>
-            Node 2 - RSSI Calibration
-            <span id="debugFreq2" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq2">5740</span> MHz</span>
-          </h3>
-          <div class="chart-container">
-            <canvas id="rssiChart2" width="800" height="250"></canvas>
-          </div>
+        <!-- RSSI Threshold Controls -->
+        <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius-sm);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">RSSI Thresholds</h3>
+          
           <div class="config-item">
-            <label for="enter2">Enter RSSI:</label>
+            <label for="calibEnter">Enter RSSI:</label>
             <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="enterInput2" value="120" oninput="updateEnterRssi2(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="enter2" value="120" oninput="updateEnterRssi2(this,value)" />
+              <input type="number" min="50" max="255" step="1" id="calibEnterInput" value="120" oninput="updateCalibEnterRssi(this.value)" />
+              <input type="range" min="50" max="255" step="1" id="calibEnterSlider" value="120" oninput="updateCalibEnterRssi(this.value)" />
             </div>
           </div>
+          
           <div class="config-item">
-            <label for="exit2">Exit RSSI:</label>
+            <label for="calibExit">Exit RSSI:</label>
             <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="exitInput2" value="100" oninput="updateExitRssi2(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="exit2" value="100" oninput="updateExitRssi2(this,value)" />
+              <input type="number" min="50" max="255" step="1" id="calibExitInput" value="100" oninput="updateCalibExitRssi(this.value)" />
+              <input type="range" min="50" max="255" step="1" id="calibExitSlider" value="100" oninput="updateCalibExitRssi(this.value)" />
             </div>
           </div>
+          
+          <button onclick="saveCalibrationValues()" style="width: 100%; padding: 12px; margin-top: 16px; background: var(--primary-gradient); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: bold; font-size: 16px;">
+            💾 Save RSSI Thresholds
+          </button>
         </div>
         
-        <div class="calib-section node-3">
-          <h3>
-            Node 3 - RSSI Calibration
-            <span id="debugFreq3" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq3">5740</span> MHz</span>
-          </h3>
-          <div class="chart-container">
-            <canvas id="rssiChart3" width="800" height="250"></canvas>
-          </div>
-          <div class="config-item">
-            <label for="enter3">Enter RSSI:</label>
-            <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="enterInput3" value="120" oninput="updateEnterRssi3(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="enter3" value="120" oninput="updateEnterRssi3(this,value)" />
-            </div>
-          </div>
-          <div class="config-item">
-            <label for="exit3">Exit RSSI:</label>
-            <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="exitInput3" value="100" oninput="updateExitRssi3(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="exit3" value="100" oninput="updateExitRssi3(this,value)" />
-            </div>
-          </div>
-        </div>
-        
-        <div class="calib-section node-4">
-          <h3>
-            Node 4 - RSSI Calibration
-            <span id="debugFreq4" class="debug-frequency" style="display: none; margin-left: 12px; font-size: 14px; color: var(--accent-color); font-weight: normal;">Current: <span id="currentFreq4">5740</span> MHz</span>
-          </h3>
-          <div class="chart-container">
-            <canvas id="rssiChart4" width="800" height="250"></canvas>
-          </div>
-          <div class="config-item">
-            <label for="enter4">Enter RSSI:</label>
-            <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="enterInput4" value="120" oninput="updateEnterRssi4(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="enter4" value="120" oninput="updateEnterRssi4(this,value)" />
-            </div>
-          </div>
-          <div class="config-item">
-            <label for="exit4">Exit RSSI:</label>
-            <div class="input-with-value">
-              <input type="number" min="50" max="255" step="1" id="exitInput4" value="100" oninput="updateExitRssi4(this,value)" />
-              <input type="range" min="50" max="255" step="1" id="exit4" value="100" oninput="updateExitRssi4(this,value)" />
-            </div>
-          </div>
-        </div>
-        
-        <!-- Debug: Hopping Calibration Values Table -->
-        <div id="debugCalibrationTable" style="display: none; margin-top: 30px; padding: 16px; background: var(--bg-card); border: 2px solid var(--border-accent); border-radius: var(--radius-sm);">
+        <!-- Debug: Calibration Values Table -->
+        <div id="debugCalibrationTable" style="display: none; margin-top: 20px; padding: 16px; background: var(--bg-card); border: 2px solid var(--border-accent); border-radius: var(--radius-sm);">
           <h3 style="color: var(--accent-color); margin-top: 0;">🔧 Debug: RSSI Calibration Values</h3>
           <div style="overflow-x: auto;">
             <table id="calibValuesTable" style="width: 100%; border-collapse: collapse; background: var(--bg-main);">
@@ -486,26 +479,18 @@
                 <tr style="background: var(--primary-gradient); color: white;">
                   <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Node</th>
                   <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Pilot</th>
-                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Band</th>
-                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Channel</th>
                   <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Frequency (MHz)</th>
                   <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Enter RSSI</th>
                   <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Exit RSSI</th>
-                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Threshold Gap</th>
+                  <th style="padding: 12px; text-align: left; border: 1px solid var(--border-color);">Gap</th>
                 </tr>
               </thead>
               <tbody id="calibValuesTableBody">
-                <!-- Rows will be populated dynamically -->
+                <!-- Rows populated dynamically -->
               </tbody>
             </table>
           </div>
-          <div style="margin-top: 12px; padding: 10px; background: var(--bg-main); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary);">
-            <strong>Note:</strong> This table shows the current RSSI calibration values for all active nodes/pilots. 
-            Values are editable and read from the configuration inputs. A larger threshold gap (Enter - Exit) provides more reliable lap detection but may miss close passes.
-          </div>
         </div>
-        
-        <button onclick="saveConfig()">Save RSSI Thresholds</button>
       </div>
     </main>
 
@@ -528,7 +513,7 @@
               <option value="ocean">Ocean Teal</option>
               <option value="purple">Purple Haze</option>
               <option value="cyan">Cyber Cyan</option>
-              <option value="orange" selected>Sunset Orange</option>
+              <option value="orange">Sunset Orange</option>
               <option value="green">Matrix Green</option>
             </select>
           </div>

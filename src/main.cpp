@@ -39,17 +39,26 @@ static void parallelTask(void *pvArgs) {
         
         // Handle frequency hopping or normal frequency changes
         if (config.getFrequencyHoppingEnabled()) {
-            // Update hopping frequencies for all active nodes
-            timer1.updateHoppingFrequency(currentTimeMs);
-            timer2.updateHoppingFrequency(currentTimeMs);
-            timer3.updateHoppingFrequency(currentTimeMs);
-            timer4.updateHoppingFrequency(currentTimeMs);
+            // Only hop frequencies if at least one timer is running (race started)
+            bool anyTimerRunning = timer1.isRunning() || timer2.isRunning() || 
+                                   timer3.isRunning() || timer4.isRunning();
+            
+            if (anyTimerRunning) {
+                // Update hopping frequencies only for active nodes
+                uint8_t activeNodeCount = config.getActiveNodeCount();
+                
+                if (activeNodeCount >= 1) timer1.updateHoppingFrequency(currentTimeMs);
+                if (activeNodeCount >= 2) timer2.updateHoppingFrequency(currentTimeMs);
+                if (activeNodeCount >= 3) timer3.updateHoppingFrequency(currentTimeMs);
+                if (activeNodeCount >= 4) timer4.updateHoppingFrequency(currentTimeMs);
+            }
+            // If no timer is running, frequencies stay on the first frequency (no hopping)
         } else {
             // Normal frequency handling (non-hopping mode)
-            rx1.handleFrequencyChange(currentTimeMs, config.getFrequency());
-            rx2.handleFrequencyChange(currentTimeMs, config.getFrequency2());
-            rx3.handleFrequencyChange(currentTimeMs, config.getFrequency3());
-            rx4.handleFrequencyChange(currentTimeMs, config.getFrequency4());
+            rx1.handleFrequencyChange(currentTimeMs, config.getFrequency(0));
+            rx2.handleFrequencyChange(currentTimeMs, config.getFrequency(1));
+            rx3.handleFrequencyChange(currentTimeMs, config.getFrequency(2));
+            rx4.handleFrequencyChange(currentTimeMs, config.getFrequency(3));
         }
         
         monitor.checkBatteryState(currentTimeMs, config.getAlarmThreshold());
@@ -71,10 +80,10 @@ void setup() {
     rx4.init();
     buzzer.init(PIN_BUZZER, BUZZER_INVERTED);
     led.init(PIN_LED, false);
-    timer1.init(&config, &rx1, &buzzer, &led);
-    timer2.init(&config, &rx2, &buzzer, &led);
-    timer3.init(&config, &rx3, &buzzer, &led);
-    timer4.init(&config, &rx4, &buzzer, &led);
+    timer1.init(&config, &rx1, &buzzer, &led, 0);  // Node ID 0
+    timer2.init(&config, &rx2, &buzzer, &led, 1);  // Node ID 1
+    timer3.init(&config, &rx3, &buzzer, &led, 2);  // Node ID 2
+    timer4.init(&config, &rx4, &buzzer, &led, 3);  // Node ID 3
     monitor.init(PIN_VBAT, VBAT_SCALE, VBAT_ADD, &buzzer, &led);
     ws.init(&config, &timer1, &timer2, &timer3, &timer4, &monitor, &buzzer, &led);
     

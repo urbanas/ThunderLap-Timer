@@ -142,9 +142,10 @@ function changeTheme(themeName) {
 
 // Load saved theme on page load
 function loadSavedTheme() {
-  const savedTheme = localStorage.getItem('selectedTheme') || 'orange';
   const themeSelect = document.getElementById('themeSelect');
   if (themeSelect) {
+    // Use saved theme from localStorage, or default to first option (ocean)
+    const savedTheme = localStorage.getItem('selectedTheme') || themeSelect.options[0].value;
     themeSelect.value = savedTheme;
     changeTheme(savedTheme);
   }
@@ -338,16 +339,20 @@ onload = function (e) {
 // Update visibility of nodes based on activeNodeCount
 function updateActiveNodeCount(count) {
   const nodeCount = parseInt(count);
+  console.log('updateActiveNodeCount called with count:', nodeCount);
   
   // Handle node cards visibility (new card layout)
   const allNodeCards = document.querySelectorAll('.node-card');
+  console.log('Found node cards:', allNodeCards.length);
+  
   allNodeCards.forEach((card, index) => {
     const nodeNum = index + 1;
-    if (nodeNum <= nodeCount) {
-      card.style.display = 'block';
-    } else {
-      card.style.display = 'none';
-    }
+    const shouldShow = nodeNum <= nodeCount;
+    console.log(`Node ${nodeNum}: shouldShow=${shouldShow}, classList=${card.classList.toString()}`);
+    
+    // Use inline style with !important would require setProperty, so we'll just set it directly
+    // and make sure it overrides the CSS
+    card.style.setProperty('display', shouldShow ? 'block' : 'none', 'important');
   });
   
   // Get all elements with node classes (for race and calibration tabs)
@@ -553,8 +558,12 @@ function loadConfiguration() {
       commonElements.pwdInput.value = config.pwd;
       
       // Set active node count and update visibility
-      const activeNodeCount = config.activeNodeCount || 2;
+      console.log('Raw config.activeNodeCount from ESP32:', config.activeNodeCount, 'type:', typeof config.activeNodeCount);
+      const activeNodeCount = config.activeNodeCount ?? 1;  // Default to 1 if undefined/null
+      console.log('Processed activeNodeCount:', activeNodeCount);
+      console.log('Setting dropdown value to:', activeNodeCount);
       commonElements.activeNodeCountSelect.value = activeNodeCount;
+      console.log('Dropdown value after setting:', commonElements.activeNodeCountSelect.value);
       updateActiveNodeCount(activeNodeCount);
       
       // Load frequency hopping configuration
@@ -583,13 +592,15 @@ function loadConfiguration() {
         updateHoppingFrequencyFields();
         hideOriginalFrequencyFields();
         
-        // Set the loaded frequency values (pilot names are auto-generated as P1, P2, P3, P4)
+        // Set the loaded frequency values (pilot numbers are auto-generated as P1, P2, P3, P4)
         for (let nodeId = 0; nodeId < 4; nodeId++) {
           if (config.hoppingFrequencies[nodeId]) {
             for (let freqIdx = 0; freqIdx < config.hoppingFrequencies[nodeId].length; freqIdx++) {
               const freq = config.hoppingFrequencies[nodeId][freqIdx];
               const bandSelect = document.getElementById(`hopBand${nodeId + 1}_${freqIdx + 1}`);
               const channelSelect = document.getElementById(`hopChannel${nodeId + 1}_${freqIdx + 1}`);
+              const enterRssiInput = document.getElementById(`hopEnterRSSI${nodeId + 1}_${freqIdx + 1}`);
+              const exitRssiInput = document.getElementById(`hopExitRSSI${nodeId + 1}_${freqIdx + 1}`);
               
               if (bandSelect && channelSelect && freq) {
                 // Find band and channel from frequency
@@ -600,12 +611,32 @@ function loadConfiguration() {
                   updateHoppingFreqDisplay(nodeId + 1, freqIdx + 1);
                 }
               }
+              
+              // Load RSSI values
+              if (enterRssiInput && config.hoppingEnterRssi && config.hoppingEnterRssi[nodeId] && config.hoppingEnterRssi[nodeId][freqIdx] !== undefined) {
+                enterRssiInput.value = config.hoppingEnterRssi[nodeId][freqIdx];
+              }
+              if (exitRssiInput && config.hoppingExitRssi && config.hoppingExitRssi[nodeId] && config.hoppingExitRssi[nodeId][freqIdx] !== undefined) {
+                exitRssiInput.value = config.hoppingExitRssi[nodeId][freqIdx];
+              }
             }
           }
         }
       } else {
         // Ensure original fields are visible when hopping is disabled
         showOriginalFrequencyFields();
+      }
+      
+      // Load theme from ESP32 (overrides localStorage)
+      if (config.theme) {
+        console.log('Loading theme from ESP32:', config.theme);
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) {
+          themeSelect.value = config.theme;
+          changeTheme(config.theme);
+          // Also save to localStorage for consistency
+          localStorage.setItem('selectedTheme', config.theme);
+        }
       }
       
       // Initialize the unified race table
@@ -630,11 +661,22 @@ function loadConfiguration() {
 function configureNode(nodeId, config) {
   const node = nodes[nodeId];
   
+  if (!node) {
+    console.warn(`Node ${nodeId} not initialized, skipping configuration`);
+    return;
+  }
+  
   setBandChannelIndex(config.freq, nodeId);
-  node.enterRssiInput.value = config.enterRssi;
-  updateEnterRssiForNode(nodeId, config.enterRssi);
-  node.exitRssiInput.value = config.exitRssi;
-  updateExitRssiForNode(nodeId, config.exitRssi);
+  
+  if (node.enterRssiInput) {
+    node.enterRssiInput.value = config.enterRssi;
+    updateEnterRssiForNode(nodeId, config.enterRssi);
+  }
+  
+  if (node.exitRssiInput) {
+    node.exitRssiInput.value = config.exitRssi;
+    updateExitRssiForNode(nodeId, config.exitRssi);
+  }
   
   populateFreqOutput(nodeId);
 }
@@ -807,46 +849,23 @@ function openTab(evt, tabName) {
   document.getElementById(tabName).style.display = "block";
   evt.currentTarget.className += " active";
 
+  // Reload configuration when switching to Config or Calibration tabs
+  // This ensures RSSI values and other settings are always in sync with ESP32
+  if (tabName === "config" || tabName === "calib") {
+    loadConfiguration();
+  }
+
   // Handle RSSI streaming for calibration tab
   if (tabName === "calib") {
-    // Auto-initialize hopping calibration mode if enabled
-    if (frequencyHoppingEnabled) {
-      startHoppingCalibration();
-    }
+    // Initialize unified calibration
+    initializeCalibrationTab();
     
     // Update debug calibration table if debug mode is enabled
     if (debugMode) {
       updateDebugCalibrationTable();
     }
     
-    // Create charts for all active nodes when opening calibration tab
-    const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value);
-    
-    // Longer delay to ensure DOM is fully updated
-    setTimeout(() => {
-      for (let i = 1; i <= 4; i++) {
-        // Always try to create/recreate charts for active nodes
-        if (i <= activeNodeCount) {
-          if (nodes[i].chartCanvas) {
-            // Stop existing chart
-            if (nodes[i].rssiChart) {
-              nodes[i].rssiChart.stop();
-              nodes[i].rssiChart = null;
-            }
-            createRssiChart(i);
-          } else {
-            console.error(`Node ${i} canvas element not found!`);
-          }
-        } else {
-          // Stop charts for inactive nodes
-          if (nodes[i].rssiChart) {
-            nodes[i].rssiChart.stop();
-            nodes[i].rssiChart = null;
-          }
-        }
-      }
-    }, 250); // Increased delay
-    
+    // Start RSSI streaming
     if (!rssiSending) {
     fetch("/timer/rssiStart", {
       method: "POST",
@@ -1027,18 +1046,26 @@ function saveConfig() {
   saveButton.disabled = true;
   saveButton.style.backgroundColor = "#FFA500";
   
+  console.log('=== SAVING CONFIG ===');
+  console.log('Active node count from dropdown:', commonElements.activeNodeCountSelect.value);
+  console.log('Dropdown element:', commonElements.activeNodeCountSelect);
+  
   // Collect hopping frequencies if enabled (pilot numbers are dynamic based on frequency count)
   const hoppingFrequencies = [];
-  const hoppingPilotNames = [];
+  const hoppingEnterRssi = [];
+  const hoppingExitRssi = [];
   
   if (frequencyHoppingEnabled) {
     for (let nodeId = 1; nodeId <= 4; nodeId++) {
       const nodeFreqs = [];
-      const nodeNames = [];
+      const nodeEnterRssi = [];
+      const nodeExitRssi = [];
       
       for (let freqIdx = 1; freqIdx <= hoppingFreqCount; freqIdx++) {
         const bandSelect = document.getElementById(`hopBand${nodeId}_${freqIdx}`);
         const channelSelect = document.getElementById(`hopChannel${nodeId}_${freqIdx}`);
+        const enterRssiInput = document.getElementById(`hopEnterRSSI${nodeId}_${freqIdx}`);
+        const exitRssiInput = document.getElementById(`hopExitRSSI${nodeId}_${freqIdx}`);
         
         if (bandSelect && channelSelect) {
           const bandIndex = ['A', 'B', 'E', 'F', 'R', 'L'].indexOf(bandSelect.value);
@@ -1049,36 +1076,62 @@ function saveConfig() {
           nodeFreqs.push(5740); // Default
         }
         
-        // Calculate global pilot number based on actual frequency count
-        // 2 freqs: Node 1 = P1-P2, Node 2 = P3-P4
-        // 3 freqs: Node 1 = P1-P3, Node 2 = P4-P6
-        // 4 freqs: Node 1 = P1-P4, Node 2 = P5-P8
-        const globalPilotNumber = (nodeId - 1) * hoppingFreqCount + freqIdx;
-        nodeNames.push(`P${globalPilotNumber}`);
+        // Collect RSSI values
+        nodeEnterRssi.push(enterRssiInput ? parseInt(enterRssiInput.value) : 120);
+        nodeExitRssi.push(exitRssiInput ? parseInt(exitRssiInput.value) : 100);
       }
       
       // Pad with defaults if needed (always pad to 4 for storage)
       while (nodeFreqs.length < 4) {
         nodeFreqs.push(5740);
-        const globalPilotNumber = (nodeId - 1) * hoppingFreqCount + nodeFreqs.length;
-        nodeNames.push(`P${globalPilotNumber}`);
+        nodeEnterRssi.push(120);
+        nodeExitRssi.push(100);
       }
       
       hoppingFrequencies.push(nodeFreqs);
-      hoppingPilotNames.push(nodeNames);
+      hoppingEnterRssi.push(nodeEnterRssi);
+      hoppingExitRssi.push(nodeExitRssi);
     }
   } else {
-    // Fill with defaults when hopping is disabled (use current hoppingFreqCount)
+    // Fill with defaults when hopping is disabled
     for (let i = 0; i < 4; i++) {
       hoppingFrequencies.push([5740, 5740, 5740, 5740]);
-      const nodeNames = [];
-      for (let j = 0; j < 4; j++) {
-        const globalPilotNumber = i * hoppingFreqCount + j + 1;
-        nodeNames.push(`P${globalPilotNumber}`);
-      }
-      hoppingPilotNames.push(nodeNames);
+      hoppingEnterRssi.push([120, 120, 120, 120]);
+      hoppingExitRssi.push([100, 100, 100, 100]);
     }
   }
+  
+  const configPayload = {
+    freq: nodes[1].frequency,
+    minLap: parseInt(commonElements.minLapInput.value * 10),
+    raceStartDelay: parseInt(raceStartDelay * 10),
+    alarm: parseInt(commonElements.alarmThreshold.value * 10),
+    anType: commonElements.announcerSelect.selectedIndex,
+    anRate: parseInt(announcerRate * 10),
+    enterRssi: nodes[1].enterRssi,
+    exitRssi: nodes[1].exitRssi,
+    freq2: nodes[2].frequency,
+    enterRssi2: nodes[2].enterRssi,
+    exitRssi2: nodes[2].exitRssi,
+    freq3: nodes[3].frequency,
+    enterRssi3: nodes[3].enterRssi,
+    exitRssi3: nodes[3].exitRssi,
+    freq4: nodes[4].frequency,
+    enterRssi4: nodes[4].enterRssi,
+    exitRssi4: nodes[4].exitRssi,
+    activeNodeCount: parseInt(commonElements.activeNodeCountSelect.value),
+    frequencyHoppingEnabled: frequencyHoppingEnabled,
+    hoppingFreqCount: hoppingFreqCount,
+    hoppingInterval: hoppingInterval,
+    hoppingFrequencies: hoppingFrequencies,
+    hoppingEnterRssi: hoppingEnterRssi,
+    hoppingExitRssi: hoppingExitRssi,
+    ssid: commonElements.ssidInput.value,
+    pwd: commonElements.pwdInput.value,
+    theme: localStorage.getItem('selectedTheme') || 'ocean',
+  };
+  
+  console.log('Config payload being sent:', configPayload);
   
   fetch("/config", {
     method: "POST",
@@ -1086,37 +1139,11 @@ function saveConfig() {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      freq: nodes[1].frequency,
-      minLap: parseInt(commonElements.minLapInput.value * 10),
-      raceStartDelay: parseInt(raceStartDelay * 10),
-      alarm: parseInt(commonElements.alarmThreshold.value * 10),
-      anType: commonElements.announcerSelect.selectedIndex,
-      anRate: parseInt(announcerRate * 10),
-      enterRssi: nodes[1].enterRssi,
-      exitRssi: nodes[1].exitRssi,
-      freq2: nodes[2].frequency,
-      enterRssi2: nodes[2].enterRssi,
-      exitRssi2: nodes[2].exitRssi,
-      freq3: nodes[3].frequency,
-      enterRssi3: nodes[3].enterRssi,
-      exitRssi3: nodes[3].exitRssi,
-      freq4: nodes[4].frequency,
-      enterRssi4: nodes[4].enterRssi,
-      exitRssi4: nodes[4].exitRssi,
-      activeNodeCount: parseInt(commonElements.activeNodeCountSelect.value),
-      frequencyHoppingEnabled: frequencyHoppingEnabled,
-      hoppingFreqCount: hoppingFreqCount,
-      hoppingInterval: hoppingInterval,
-      hoppingFrequencies: hoppingFrequencies,
-      hoppingPilotNames: hoppingPilotNames,
-      ssid: commonElements.ssidInput.value,
-      pwd: commonElements.pwdInput.value,
-    }),
+    body: JSON.stringify(configPayload),
   })
     .then((response) => response.json())
-    .then((response) => {
-      console.log("/config:", JSON.stringify(response));
+    .then((data) => {
+      console.log("/config response:", JSON.stringify(data));
       
       // Show success state
       saveButton.textContent = "Saved ✓";
@@ -1268,8 +1295,9 @@ function addLap(lapStr, nodeId = 1) {
     last2lapStr = (newLap + node.lapTimes[node.lapTimes.length - 2]).toFixed(2);
   }
   
-  // Calculate 3-lap time
-  if (node.lapTimes.length >= 3 && node.lapNo != 0) {
+  // Calculate 3-lap time (only when we have 4 total laps: lap 0, 1, 2, 3)
+  // 3-lap time = lap1 + lap2 + lap3 (excluding lap 0)
+  if (node.lapTimes.length >= 4 && node.lapNo != 0) {
     last3lapStr = (newLap + node.lapTimes[node.lapTimes.length - 2] + node.lapTimes[node.lapTimes.length - 3]).toFixed(2);
   }
   
@@ -1287,6 +1315,12 @@ function addLap(lapStr, nodeId = 1) {
   
   // Announce lap time
   const announcerType = commonElements.announcerSelect.options[commonElements.announcerSelect.selectedIndex].value;
+  
+  // Calculate total pilots for single pilot detection
+  const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value) || 1;
+  const totalPilots = frequencyHoppingEnabled ? activeNodeCount * hoppingFreqCount : activeNodeCount;
+  const isSinglePilot = totalPilots === 1;
+  
   switch (announcerType) {
     case "beep":
       beep(100, 330, "square");
@@ -1295,8 +1329,11 @@ function addLap(lapStr, nodeId = 1) {
       if (node.lapNo == 0) {
         queueSpeak(`<p>Hole Shot ${lapStr}<p>`);
       } else {
-        const lapNoStr = pilotLabel + " Lap " + node.lapNo + ", ";
-        const text = "<p>" + lapNoStr + lapStr + "</p>";
+        // For single pilot: just announce lap time
+        // For multiple pilots: announce pilot, lap number, and time
+        const text = isSinglePilot 
+          ? `<p>${lapStr}</p>`
+          : `<p>${pilotLabel} Lap ${node.lapNo}, ${lapStr}</p>`;
         queueSpeak(text);
       }
       break;
@@ -1304,7 +1341,11 @@ function addLap(lapStr, nodeId = 1) {
       if (node.lapNo == 0) {
         queueSpeak(`<p>Hole Shot ${lapStr}<p>`);
       } else if (last2lapStr != "") {
-        const text2 = "<p>" + pilotLabel + " 2 laps " + last2lapStr + "</p>";
+        // For single pilot: just announce 2-lap time
+        // For multiple pilots: announce pilot and 2-lap time
+        const text2 = isSinglePilot
+          ? `<p>2 laps ${last2lapStr}</p>`
+          : `<p>${pilotLabel} 2 laps ${last2lapStr}</p>`;
         queueSpeak(text2);
       }
       break;
@@ -1312,7 +1353,11 @@ function addLap(lapStr, nodeId = 1) {
       if (node.lapNo == 0) {
         queueSpeak(`<p>Hole Shot ${lapStr}<p>`);
       } else if (last3lapStr != "") {
-        const text3 = "<p>" + pilotLabel + " 3 laps " + last3lapStr + "</p>";
+        // For single pilot: just announce 3-lap time
+        // For multiple pilots: announce pilot and 3-lap time
+        const text3 = isSinglePilot
+          ? `<p>3 laps ${last3lapStr}</p>`
+          : `<p>${pilotLabel} 3 laps ${last3lapStr}</p>`;
         queueSpeak(text3);
       }
       break;
@@ -1384,9 +1429,11 @@ function addLapToUnifiedTable(pilotId, lapTime, threeLapTime) {
     row.cells[timeCellIndex].textContent = lapTime + 's';
   }
   
-  // Calculate and display 3-lap time if we have enough laps
-  if (window.lapTimes[pilotId].length >= 3 && lapNumber > 0) {
+  // Calculate and display 3-lap time if we have at least 4 laps (lap 0, 1, 2, 3)
+  // 3-lap time = lap1 + lap2 + lap3 (excluding lap 0 which starts the race)
+  if (window.lapTimes[pilotId].length >= 4 && lapNumber > 0) {
     const times = window.lapTimes[pilotId];
+    // Sum the last 3 laps (excluding lap 0)
     const sum = times[times.length - 1] + times[times.length - 2] + times[times.length - 3];
     if (row.cells[threeLapCellIndex]) {
       row.cells[threeLapCellIndex].textContent = sum.toFixed(2) + 's';
@@ -2060,21 +2107,15 @@ function simulateLap(pilotOrNodeId) {
   // Add the new lap time
   window.lapTimes[id].push(randomTime);
   
-  console.log(`Simulated lap for ${frequencyHoppingEnabled ? 'P' : 'Node '}${pilotOrNodeId}:`, randomTime);
+  console.log(`Simulated lap for ${frequencyHoppingEnabled ? 'P' : 'Node '}${pilotOrNodeId}:`, randomTime, 'ms');
   
-  // Add the lap time to the table directly
+  // Add the lap time to the table directly (this will trigger the voice announcement)
   addLapToTable(pilotOrNodeId, randomTime);
   
-  // Try to send to backend if connected (will fail silently if testing locally)
-  fetch(`/simulateLap?node=${pilotOrNodeId}`)
-    .then(response => response.json())
-    .then(data => {
-      console.log('Backend response:', data);
-    })
-    .catch(err => {
-      // Silently ignore errors when testing locally
-      console.log('Running in local mode, lap added to UI only');
-    });
+  // Note: We don't call the backend /simulateLap endpoint because it would:
+  // 1. Generate a different random lap time
+  // 2. Trigger a duplicate voice announcement
+  // Debug mode is UI-only simulation for testing the race tab interface
 }
 
 function addLapToTable(pilotId, lapTime) {
@@ -2093,10 +2134,11 @@ function addLapToTable(pilotId, lapTime) {
   const lapHistory = window.lapTimes[id] || [];
   const lapNumber = lapHistory.length;
   
-  // Calculate 3-lap sum if we have at least 3 laps
+  // Calculate 3-lap sum if we have at least 4 laps (lap 0, 1, 2, 3)
+  // 3-lap time = lap1 + lap2 + lap3 (excluding lap 0 which starts the race)
   let threeLapSum = '-';
-  if (lapHistory.length >= 3) {
-    const lastThree = lapHistory.slice(-3);
+  if (lapHistory.length >= 4) {
+    const lastThree = lapHistory.slice(-3);  // Gets the last 3 laps (1, 2, 3)
     const sum = lastThree.reduce((a, b) => a + b, 0);
     threeLapSum = formatTime(Math.round(sum));
   }
@@ -2160,6 +2202,11 @@ function addLapToTable(pilotId, lapTime) {
     const announcerType = commonElements.announcerSelect.options[commonElements.announcerSelect.selectedIndex].value;
     const lapTimeSeconds = (lapTime / 1000).toFixed(2);
     
+    // Calculate total pilots for single pilot detection
+    const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value) || 1;
+    const totalPilots = frequencyHoppingEnabled ? activeNodeCount * hoppingFreqCount : activeNodeCount;
+    const isSinglePilot = totalPilots === 1;
+    
     // Calculate 2-lap time for announcer
     let twoLapTime = '';
     if (lapHistory.length >= 2 && lapNumber > 1) {
@@ -2175,14 +2222,24 @@ function addLapToTable(pilotId, lapTime) {
         if (lapNumber === 1) {
           queueSpeak(`<p>Hole Shot ${lapTimeSeconds}</p>`);
         } else {
-          queueSpeak(`<p>P${pilotId} Lap ${lapNumber - 1}, ${lapTimeSeconds}</p>`);
+          // For single pilot: just announce lap time
+          // For multiple pilots: announce pilot, lap number, and time
+          const text = isSinglePilot
+            ? `<p>${lapTimeSeconds}</p>`
+            : `<p>P${pilotId} Lap ${lapNumber - 1}, ${lapTimeSeconds}</p>`;
+          queueSpeak(text);
         }
         break;
       case "2lap":
         if (lapNumber === 1) {
           queueSpeak(`<p>Hole Shot ${lapTimeSeconds}</p>`);
         } else if (twoLapTime !== '') {
-          queueSpeak(`<p>P${pilotId} 2 laps ${twoLapTime}</p>`);
+          // For single pilot: just announce 2-lap time
+          // For multiple pilots: announce pilot and 2-lap time
+          const text = isSinglePilot
+            ? `<p>2 laps ${twoLapTime}</p>`
+            : `<p>P${pilotId} 2 laps ${twoLapTime}</p>`;
+          queueSpeak(text);
         }
         break;
       case "3lap":
@@ -2191,7 +2248,12 @@ function addLapToTable(pilotId, lapTime) {
         } else if (threeLapSum !== '-') {
           // Convert threeLapSum back to seconds for announcement
           const threeLapSeconds = (lapHistory.slice(-3).reduce((a, b) => a + b, 0) / 1000).toFixed(2);
-          queueSpeak(`<p>P${pilotId} 3 laps ${threeLapSeconds}</p>`);
+          // For single pilot: just announce 3-lap time
+          // For multiple pilots: announce pilot and 3-lap time
+          const text = isSinglePilot
+            ? `<p>3 laps ${threeLapSeconds}</p>`
+            : `<p>P${pilotId} 3 laps ${threeLapSeconds}</p>`;
+          queueSpeak(text);
         }
         break;
       default:
@@ -2231,6 +2293,18 @@ function toggleFrequencyHopping(enabled) {
   const hoppingIndicator = document.getElementById('hoppingIndicator');
   
   if (enabled) {
+    // IMPORTANT: Set dropdown to first value if nothing selected, then sync hoppingFreqCount
+    const hoppingFreqCountSelect = document.getElementById('hoppingFreqCount');
+    if (hoppingFreqCountSelect) {
+      // If no value selected or invalid, set to first option (usually 2)
+      if (!hoppingFreqCountSelect.value || hoppingFreqCountSelect.selectedIndex === -1) {
+        hoppingFreqCountSelect.selectedIndex = 0;
+        console.log('Set hoppingFreqCount dropdown to first value:', hoppingFreqCountSelect.value);
+      }
+      hoppingFreqCount = parseInt(hoppingFreqCountSelect.value);
+      console.log('Synced hoppingFreqCount from dropdown:', hoppingFreqCount);
+    }
+    
     hoppingConfig.style.display = 'flex';
     // Show hopping interval config only if debug mode is enabled
     if (hoppingIntervalConfig && debugMode) {
@@ -2289,10 +2363,10 @@ function initializeUnifiedRaceTable() {
     return;
   }
   
-  // Get active node count, with fallback to 2
-  let activeNodeCount = 2;
+  // Get active node count, with fallback to 1
+  let activeNodeCount = 1;
   if (commonElements && commonElements.activeNodeCountSelect) {
-    activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value) || 2;
+    activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value) || 1;
   }
   
   // Calculate total number of pilots
@@ -2316,16 +2390,6 @@ function initializeUnifiedRaceTable() {
     const pilotTh = document.createElement('th');
     pilotTh.className = 'pilot-col';
     pilotTh.textContent = `P${i}`;
-    
-    // Add debug info for normal mode (which node this pilot is on)
-    if (!frequencyHoppingEnabled && debugMode) {
-      const debugSpan = document.createElement('span');
-      debugSpan.className = 'node-debug-info';
-      debugSpan.textContent = ` (N${i})`;
-      debugSpan.style.fontSize = '11px';
-      debugSpan.style.opacity = '0.7';
-      pilotTh.appendChild(debugSpan);
-    }
     
     header.appendChild(pilotTh);
     
@@ -2395,6 +2459,18 @@ function updateHoppingFreqCount(count) {
 
 function updateHoppingFrequencyFields() {
   const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value);
+  
+  // IMPORTANT: Validate hoppingFreqCount to prevent creating too many cards
+  if (!hoppingFreqCount || hoppingFreqCount < 2 || hoppingFreqCount > 4) {
+    console.warn('Invalid hoppingFreqCount:', hoppingFreqCount, '- resetting to 4');
+    hoppingFreqCount = 4;
+    const hoppingFreqCountSelect = document.getElementById('hoppingFreqCount');
+    if (hoppingFreqCountSelect) {
+      hoppingFreqCountSelect.value = 4;
+    }
+  }
+  
+  console.log('updateHoppingFrequencyFields called - activeNodeCount:', activeNodeCount, 'hoppingFreqCount:', hoppingFreqCount);
   
   // Use a more reliable way to find node cards
   const allNodeCards = document.querySelectorAll('.node-card');
@@ -2566,24 +2642,88 @@ function updateHoppingFrequencyFields() {
       freqSection.appendChild(freqLabel);
       freqSection.appendChild(freqDisplay);
       
-      // Create hidden RSSI inputs for backend compatibility
+      // RSSI Thresholds Section
+      const rssiSection = document.createElement('div');
+      rssiSection.style.display = 'flex';
+      rssiSection.style.flexDirection = 'column';
+      rssiSection.style.gap = '12px';
+      rssiSection.style.marginTop = '8px';
+      rssiSection.style.padding = '12px';
+      rssiSection.style.background = 'var(--bg-main)';
+      rssiSection.style.borderRadius = 'var(--radius-sm)';
+      rssiSection.style.border = '1px dashed var(--border-color)';
+      
+      // Enter RSSI
+      const enterRssiWrapper = document.createElement('div');
+      enterRssiWrapper.style.display = 'flex';
+      enterRssiWrapper.style.flexDirection = 'column';
+      enterRssiWrapper.style.gap = '4px';
+      
+      const enterLabel = document.createElement('label');
+      enterLabel.textContent = 'Enter RSSI';
+      enterLabel.style.fontSize = '12px';
+      enterLabel.style.color = 'var(--text-secondary)';
+      enterLabel.style.fontWeight = 'bold';
+      enterLabel.style.textTransform = 'uppercase';
+      enterLabel.style.letterSpacing = '0.3px';
+      
       const enterInput = document.createElement('input');
-      enterInput.type = 'hidden';
+      enterInput.type = 'number';
       enterInput.id = `hopEnterRSSI${nodeId}_${freqIdx}`;
       enterInput.value = '120';
+      enterInput.min = '0';
+      enterInput.max = '255';
+      enterInput.style.padding = '8px 10px';
+      enterInput.style.fontSize = '14px';
+      enterInput.style.borderRadius = 'var(--radius-sm)';
+      enterInput.style.border = '2px solid var(--border-color)';
+      enterInput.style.background = 'var(--bg-card)';
+      enterInput.style.color = 'var(--text-primary)';
+      enterInput.style.width = '100%';
+      
+      enterRssiWrapper.appendChild(enterLabel);
+      enterRssiWrapper.appendChild(enterInput);
+      
+      // Exit RSSI
+      const exitRssiWrapper = document.createElement('div');
+      exitRssiWrapper.style.display = 'flex';
+      exitRssiWrapper.style.flexDirection = 'column';
+      exitRssiWrapper.style.gap = '4px';
+      
+      const exitLabel = document.createElement('label');
+      exitLabel.textContent = 'Exit RSSI';
+      exitLabel.style.fontSize = '12px';
+      exitLabel.style.color = 'var(--text-secondary)';
+      exitLabel.style.fontWeight = 'bold';
+      exitLabel.style.textTransform = 'uppercase';
+      exitLabel.style.letterSpacing = '0.3px';
       
       const exitInput = document.createElement('input');
-      exitInput.type = 'hidden';
+      exitInput.type = 'number';
       exitInput.id = `hopExitRSSI${nodeId}_${freqIdx}`;
-      exitInput.value = '90';
+      exitInput.value = '100';
+      exitInput.min = '0';
+      exitInput.max = '255';
+      exitInput.style.padding = '8px 10px';
+      exitInput.style.fontSize = '14px';
+      exitInput.style.borderRadius = 'var(--radius-sm)';
+      exitInput.style.border = '2px solid var(--border-color)';
+      exitInput.style.background = 'var(--bg-card)';
+      exitInput.style.color = 'var(--text-primary)';
+      exitInput.style.width = '100%';
+      
+      exitRssiWrapper.appendChild(exitLabel);
+      exitRssiWrapper.appendChild(exitInput);
+      
+      rssiSection.appendChild(enterRssiWrapper);
+      rssiSection.appendChild(exitRssiWrapper);
       
       // Assemble the item
       freqItem.appendChild(pilotHeader);
       freqItem.appendChild(bandSection);
       freqItem.appendChild(channelSection);
       freqItem.appendChild(freqSection);
-      freqItem.appendChild(enterInput);
-      freqItem.appendChild(exitInput);
+      freqItem.appendChild(rssiSection);
       
       // Add hover effect
       freqItem.addEventListener('mouseenter', () => {
@@ -2609,6 +2749,11 @@ function updateHoppingFrequencyFields() {
     const nodeBody = nodeCard.querySelector('.node-card-body');
     if (nodeBody) {
       nodeBody.appendChild(hoppingGroup);
+      
+      // Update frequency displays for all cards in this node AFTER they're added to DOM
+      for (let freqIdx = 1; freqIdx <= hoppingFreqCount; freqIdx++) {
+        updateHoppingFreqDisplay(nodeId, freqIdx);
+      }
     }
   });
 }
@@ -2655,7 +2800,7 @@ function initializeNormalCalibrationSelector() {
   if (!normalCalibNodeSelect) return;
   
   // Populate dropdown based on active node count
-  const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value) || 2;
+  const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value) || 1;
   normalCalibNodeSelect.innerHTML = '';
   
   for (let i = 1; i <= activeNodeCount; i++) {
@@ -2674,6 +2819,9 @@ function switchNormalCalibrationNode(nodeId) {
   const selectedNode = parseInt(nodeId);
   
   console.log(`Switching to node ${selectedNode}`);
+  
+  // Load current RSSI values from config for this node
+  loadNodeRSSIFromConfig(selectedNode);
   
   // Hide all calibration sections and remove visible class
   for (let i = 1; i <= 4; i++) {
@@ -2730,6 +2878,37 @@ function switchNormalCalibrationNode(nodeId) {
   }, 150);
 }
 
+// Load RSSI values from config tab inputs for a specific node
+function loadNodeRSSIFromConfig(nodeId) {
+  const node = nodes[nodeId];
+  if (!node) return;
+  
+  // In normal mode, get RSSI values from the config tab inputs
+  let enterRssi, exitRssi;
+  
+  if (nodeId === 1) {
+    enterRssi = parseInt(commonElements.enterRssiInput.value) || 120;
+    exitRssi = parseInt(commonElements.exitRssiInput.value) || 100;
+  } else {
+    const enterInput = document.getElementById(`enterRssiInput${nodeId}`);
+    const exitInput = document.getElementById(`exitRssiInput${nodeId}`);
+    enterRssi = enterInput ? parseInt(enterInput.value) : 120;
+    exitRssi = exitInput ? parseInt(exitInput.value) : 100;
+  }
+  
+  // Update calibration sliders/inputs with config values
+  node.enterRssiInput.value = enterRssi;
+  node.enterRssiSlider.value = enterRssi;
+  node.exitRssiInput.value = exitRssi;
+  node.exitRssiSlider.value = exitRssi;
+  
+  // Trigger updates to sync everything
+  updateEnterRssiForNode(nodeId, enterRssi);
+  updateExitRssiForNode(nodeId, exitRssi);
+  
+  console.log(`Loaded RSSI for node ${nodeId}: Enter=${enterRssi}, Exit=${exitRssi}`);
+}
+
 // Update normal calibration selector when active node count changes
 function updateNormalCalibrationSelector() {
   if (!frequencyHoppingEnabled) {
@@ -2767,6 +2946,369 @@ if (document.readyState === 'loading') {
       toggle.checked = false;
       toggle3LapColumns(false);
     }
+  }
+}
+
+// ============================================================================
+// UNIFIED CALIBRATION TAB FUNCTIONS
+// ============================================================================
+
+// Global state for current calibration selection
+let currentCalibSelection = {
+  nodeId: 1,
+  freqIdx: null,  // null for normal mode, 0-3 for hopping mode
+  frequency: 5740,
+  pilotNumber: null  // null for normal mode, 1-16 for hopping mode
+};
+
+// Initialize calibration tab when opened
+function initializeCalibrationTab() {
+  const activeNodeCount = parseInt(commonElements.activeNodeCountSelect.value);
+  const calibNodeSelect = document.getElementById('calibNodeSelect');
+  const calibFreqSelect = document.getElementById('calibFreqSelect');
+  const calibFreqSelectorWrapper = document.getElementById('calibFreqSelectorWrapper');
+  
+  // Populate node dropdown
+  calibNodeSelect.innerHTML = '';
+  for (let i = 1; i <= activeNodeCount; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = `Node ${i}`;
+    calibNodeSelect.appendChild(option);
+  }
+  
+  // Show/hide frequency selector based on hopping mode
+  if (frequencyHoppingEnabled) {
+    calibFreqSelectorWrapper.style.display = 'flex';
+    // Populate frequency dropdown for first node
+    populateFrequencyDropdown(1);
+  } else {
+    calibFreqSelectorWrapper.style.display = 'none';
+  }
+  
+  // Initialize with first selection
+  currentCalibSelection.nodeId = 1;
+  currentCalibSelection.freqIdx = frequencyHoppingEnabled ? 0 : null;
+  calibNodeSelect.value = 1;
+  if (frequencyHoppingEnabled && calibFreqSelect.options.length > 0) {
+    calibFreqSelect.value = 1;  // Set to first frequency (1-indexed)
+  }
+  
+  // Switch to first node/frequency
+  switchCalibration();
+}
+
+// Populate frequency dropdown for a specific node (hopping mode only)
+function populateFrequencyDropdown(nodeId) {
+  const calibFreqSelect = document.getElementById('calibFreqSelect');
+  calibFreqSelect.innerHTML = '';
+  
+  for (let freqIdx = 1; freqIdx <= hoppingFreqCount; freqIdx++) {
+    const pilotNumber = (nodeId - 1) * hoppingFreqCount + freqIdx;
+    const freqDisplay = document.getElementById(`hopFreq${nodeId}_${freqIdx}`);
+    const frequency = freqDisplay ? parseInt(freqDisplay.textContent) : 5740;
+    
+    const option = document.createElement('option');
+    option.value = freqIdx;
+    option.textContent = `P${pilotNumber} @ ${frequency} MHz`;
+    calibFreqSelect.appendChild(option);
+  }
+}
+
+// Switch calibration when dropdown changes
+function switchCalibration() {
+  const calibNodeSelect = document.getElementById('calibNodeSelect');
+  const calibFreqSelect = document.getElementById('calibFreqSelect');
+  
+  const nodeId = parseInt(calibNodeSelect.value);
+  currentCalibSelection.nodeId = nodeId;
+  
+  if (frequencyHoppingEnabled) {
+    // Store current frequency index before repopulating
+    const currentFreqIdx = parseInt(calibFreqSelect.value || 1);
+    
+    // Update frequency dropdown for this node
+    populateFrequencyDropdown(nodeId);
+    
+    // Restore the frequency selection (or default to 1 if it doesn't exist)
+    const maxFreqIdx = Math.min(currentFreqIdx, hoppingFreqCount);
+    calibFreqSelect.value = maxFreqIdx;
+    
+    const freqIdx = parseInt(calibFreqSelect.value);
+    currentCalibSelection.freqIdx = freqIdx - 1;  // Convert to 0-indexed
+    currentCalibSelection.pilotNumber = (nodeId - 1) * hoppingFreqCount + freqIdx;
+    
+    // Get frequency from hopping config
+    const freqDisplay = document.getElementById(`hopFreq${nodeId}_${freqIdx}`);
+    currentCalibSelection.frequency = freqDisplay ? parseInt(freqDisplay.textContent) : 5740;
+    
+    // Load RSSI values for this pilot (pass 0-indexed freqIdx)
+    loadCalibrationRSSI(nodeId, currentCalibSelection.freqIdx);
+    
+    console.log(`Switched to Node ${nodeId}, Freq ${freqIdx}, Pilot ${currentCalibSelection.pilotNumber}, Frequency: ${currentCalibSelection.frequency} MHz`);
+  } else {
+    // Normal mode - get frequency from config
+    if (nodeId === 1) {
+      currentCalibSelection.frequency = parseInt(commonElements.freqInput.value) || 5740;
+    } else {
+      const freqInput = document.getElementById(`freqInput${nodeId}`);
+      currentCalibSelection.frequency = freqInput ? parseInt(freqInput.value) : 5740;
+    }
+    currentCalibSelection.freqIdx = null;
+    currentCalibSelection.pilotNumber = null;
+    
+    // Load RSSI values for this node
+    loadCalibrationRSSI(nodeId, null);
+    
+    console.log(`Switched to Node ${nodeId}, Frequency: ${currentCalibSelection.frequency} MHz`);
+  }
+  
+  // Update UI
+  updateCalibrationUI();
+  
+  // Recreate chart for this node
+  recreateCalibrationChart(nodeId);
+}
+
+// Load RSSI values into calibration sliders
+function loadCalibrationRSSI(nodeId, freqIdx) {
+  const calibEnterInput = document.getElementById('calibEnterInput');
+  const calibEnterSlider = document.getElementById('calibEnterSlider');
+  const calibExitInput = document.getElementById('calibExitInput');
+  const calibExitSlider = document.getElementById('calibExitSlider');
+  
+  let enterRssi, exitRssi;
+  
+  if (freqIdx !== null) {
+    // Hopping mode - get from hopping config inputs
+    const enterInput = document.getElementById(`hopEnterRSSI${nodeId}_${freqIdx + 1}`);
+    const exitInput = document.getElementById(`hopExitRSSI${nodeId}_${freqIdx + 1}`);
+    enterRssi = enterInput ? parseInt(enterInput.value) : 120;
+    exitRssi = exitInput ? parseInt(exitInput.value) : 100;
+  } else {
+    // Normal mode - get from node config inputs
+    if (nodeId === 1) {
+      enterRssi = parseInt(commonElements.enterRssiInput.value) || 120;
+      exitRssi = parseInt(commonElements.exitRssiInput.value) || 100;
+    } else {
+      const enterInput = document.getElementById(`enterRssiInput${nodeId}`);
+      const exitInput = document.getElementById(`exitRssiInput${nodeId}`);
+      enterRssi = enterInput ? parseInt(enterInput.value) : 120;
+      exitRssi = exitInput ? parseInt(exitInput.value) : 100;
+    }
+  }
+  
+  // Update calibration controls
+  calibEnterInput.value = enterRssi;
+  calibEnterSlider.value = enterRssi;
+  calibExitInput.value = exitRssi;
+  calibExitSlider.value = exitRssi;
+  
+  console.log(`Loaded RSSI for Node ${nodeId}${freqIdx !== null ? ` Freq ${freqIdx + 1}` : ''}: Enter=${enterRssi}, Exit=${exitRssi}`);
+}
+
+// Update calibration UI labels
+function updateCalibrationUI() {
+  const currentCalibInfo = document.getElementById('currentCalibInfo');
+  const calibChartTitle = document.getElementById('calibChartTitle');
+  const calibCurrentFreq = document.getElementById('calibCurrentFreq');
+  
+  let infoText, titleText;
+  
+  if (currentCalibSelection.pilotNumber !== null) {
+    infoText = `Node ${currentCalibSelection.nodeId} - P${currentCalibSelection.pilotNumber} @ ${currentCalibSelection.frequency} MHz`;
+    titleText = `Node ${currentCalibSelection.nodeId} - P${currentCalibSelection.pilotNumber}`;
+  } else {
+    infoText = `Node ${currentCalibSelection.nodeId} @ ${currentCalibSelection.frequency} MHz`;
+    titleText = `Node ${currentCalibSelection.nodeId}`;
+  }
+  
+  currentCalibInfo.textContent = infoText;
+  calibChartTitle.textContent = titleText;
+  calibCurrentFreq.textContent = `Current: ${currentCalibSelection.frequency} MHz`;
+}
+
+// Recreate chart for calibration
+function recreateCalibrationChart(nodeId) {
+  const canvas = document.getElementById('calibRssiChart');
+  if (!canvas) {
+    console.error('Calibration chart canvas not found');
+    return;
+  }
+  
+  // Ensure node exists in nodes object
+  if (!nodes[nodeId]) {
+    console.warn(`Node ${nodeId} not initialized, initializing now...`);
+    // Initialize minimal node structure needed for chart
+    nodes[nodeId] = {
+      rssiSeries: new TimeSeries(),
+      rssiCrossingSeries: new TimeSeries(),
+      maxRssiValue: 130,
+      minRssiValue: 90,
+      rssiChart: null,
+      chartCanvas: canvas
+    };
+  }
+  
+  // Stop existing chart if any
+  if (nodes[nodeId].rssiChart) {
+    nodes[nodeId].rssiChart.stop();
+  }
+  
+  // Create new chart for this node
+  setTimeout(() => {
+    // Temporarily assign the unified canvas to this node
+    const originalCanvas = nodes[nodeId].chartCanvas;
+    nodes[nodeId].chartCanvas = canvas;
+    
+    createRssiChart(nodeId);
+    
+    console.log(`Created calibration chart for Node ${nodeId}`);
+  }, 100);
+}
+
+// Update Enter RSSI from calibration controls
+function updateCalibEnterRssi(value) {
+  const enterValue = parseInt(value);
+  const calibEnterInput = document.getElementById('calibEnterInput');
+  const calibEnterSlider = document.getElementById('calibEnterSlider');
+  const calibExitInput = document.getElementById('calibExitInput');
+  const calibExitSlider = document.getElementById('calibExitSlider');
+  
+  // Sync both input and slider
+  calibEnterInput.value = enterValue;
+  calibEnterSlider.value = enterValue;
+  
+  // Ensure exit is less than enter
+  const exitValue = parseInt(calibExitInput.value);
+  if (exitValue >= enterValue) {
+    const newExit = Math.max(50, enterValue - 1);
+    calibExitInput.value = newExit;
+    calibExitSlider.value = newExit;
+  }
+}
+
+// Update Exit RSSI from calibration controls
+function updateCalibExitRssi(value) {
+  const exitValue = parseInt(value);
+  const calibEnterInput = document.getElementById('calibEnterInput');
+  const calibEnterSlider = document.getElementById('calibEnterSlider');
+  const calibExitInput = document.getElementById('calibExitInput');
+  const calibExitSlider = document.getElementById('calibExitSlider');
+  
+  // Sync both input and slider
+  calibExitInput.value = exitValue;
+  calibExitSlider.value = exitValue;
+  
+  // Ensure exit is less than enter
+  const enterValue = parseInt(calibEnterInput.value);
+  if (exitValue >= enterValue) {
+    const newEnter = Math.min(255, exitValue + 1);
+    calibEnterInput.value = newEnter;
+    calibEnterSlider.value = newEnter;
+  }
+}
+
+// Save calibration values back to config
+function saveCalibrationValues() {
+  const calibEnterInput = document.getElementById('calibEnterInput');
+  const calibExitInput = document.getElementById('calibExitInput');
+  const enterValue = parseInt(calibEnterInput.value);
+  const exitValue = parseInt(calibExitInput.value);
+  
+  const nodeId = currentCalibSelection.nodeId;
+  const freqIdx = currentCalibSelection.freqIdx;
+  
+  // NOTE: These console.log messages appear in BROWSER CONSOLE (F12 / Developer Tools)
+  // NOT in ESP32 Serial Monitor
+  console.log('=== SAVE CALIBRATION VALUES ===');
+  console.log(`Node: ${nodeId}, FreqIdx: ${freqIdx}, Pilot: ${currentCalibSelection.pilotNumber}`);
+  console.log(`Enter RSSI: ${enterValue}, Exit RSSI: ${exitValue}`);
+  console.log(`Frequency: ${currentCalibSelection.frequency} MHz`);
+  
+  if (freqIdx !== null) {
+    // Hopping mode - save to hopping config inputs
+    const hopEnterInputId = `hopEnterRSSI${nodeId}_${freqIdx + 1}`;
+    const hopExitInputId = `hopExitRSSI${nodeId}_${freqIdx + 1}`;
+    const hopEnterInput = document.getElementById(hopEnterInputId);
+    const hopExitInput = document.getElementById(hopExitInputId);
+    
+    console.log(`Hopping Mode - Saving to:`);
+    console.log(`  Enter: #${hopEnterInputId} = ${enterValue}`);
+    console.log(`  Exit: #${hopExitInputId} = ${exitValue}`);
+    
+    if (hopEnterInput) {
+      hopEnterInput.value = enterValue;
+      console.log(`  ✅ Saved Enter RSSI to ${hopEnterInputId}`);
+    } else {
+      console.error(`  ❌ Element ${hopEnterInputId} not found!`);
+    }
+    
+    if (hopExitInput) {
+      hopExitInput.value = exitValue;
+      console.log(`  ✅ Saved Exit RSSI to ${hopExitInputId}`);
+    } else {
+      console.error(`  ❌ Element ${hopExitInputId} not found!`);
+    }
+    
+    console.log(`Saved RSSI for Node ${nodeId} P${currentCalibSelection.pilotNumber}: Enter=${enterValue}, Exit=${exitValue}`);
+    alert(`✅ Saved RSSI for Pilot ${currentCalibSelection.pilotNumber}!\n\nEnter: ${enterValue}\nExit: ${exitValue}\n\nDon't forget to click "Save Configuration" on the Config tab to save to ESP32.`);
+  } else {
+    // Normal mode - save to node config inputs
+    console.log(`Normal Mode - Saving to Node ${nodeId} config inputs`);
+    
+    if (nodeId === 1) {
+      console.log(`  Saving to commonElements.enterRssiInput and commonElements.exitRssiInput`);
+      commonElements.enterRssiInput.value = enterValue;
+      commonElements.exitRssiInput.value = exitValue;
+      console.log(`  ✅ Saved to Node 1 config inputs`);
+    } else {
+      const enterInputId = `enterRssiInput${nodeId}`;
+      const exitInputId = `exitRssiInput${nodeId}`;
+      const enterInput = document.getElementById(enterInputId);
+      const exitInput = document.getElementById(exitInputId);
+      
+      console.log(`  Enter: #${enterInputId} = ${enterValue}`);
+      console.log(`  Exit: #${exitInputId} = ${exitValue}`);
+      
+      if (enterInput) {
+        enterInput.value = enterValue;
+        console.log(`  ✅ Saved Enter RSSI to ${enterInputId}`);
+      } else {
+        console.error(`  ❌ Element ${enterInputId} not found!`);
+      }
+      
+      if (exitInput) {
+        exitInput.value = exitValue;
+        console.log(`  ✅ Saved Exit RSSI to ${exitInputId}`);
+      } else {
+        console.error(`  ❌ Element ${exitInputId} not found!`);
+      }
+    }
+    
+    console.log(`Saved RSSI for Node ${nodeId}: Enter=${enterValue}, Exit=${exitValue}`);
+    alert(`✅ Saved RSSI for Node ${nodeId}!\n\nEnter: ${enterValue}\nExit: ${exitValue}\n\nDon't forget to click "Save Configuration" on the Config tab to save to ESP32.`);
+  }
+  
+  console.log('=== SAVE COMPLETE ===');
+}
+
+// Toggle auto-calibration
+function toggleAutoCalibration() {
+  const autoCalStatus = document.getElementById('autoCalStatus');
+  const autoCalBtn = document.getElementById('autoCalBtn');
+  
+  if (autoCalStatus.style.display === 'none') {
+    // Start auto-calibration for current selection
+    const nodeId = currentCalibSelection.nodeId;
+    startAutoCalibration(nodeId);
+    autoCalBtn.textContent = '🛑 Stop Auto-Cal';
+    autoCalBtn.style.background = 'var(--error-color)';
+  } else {
+    // Stop auto-calibration
+    stopAutoCalibration();
+    autoCalBtn.textContent = '🤖 Auto-Calibrate';
+    autoCalBtn.style.background = 'var(--success-gradient)';
   }
 }
 
@@ -3032,3 +3574,198 @@ function endHoppingCalibration() {
     });
 }
 
+
+// ===========================
+// Auto-Calibration Functions
+// ===========================
+
+let autoCalInterval = null;
+let autoCalCurrentNode = 1;
+
+function startAutoCalibration() {
+  autoCalCurrentNode = parseInt(document.getElementById('autoCalNodeSelect').value);
+  
+  // Send start request to backend
+  fetch(`/autoCal/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `node=${autoCalCurrentNode}`
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Auto-calibration started:', data);
+      
+      // Update UI to show in-progress state
+      document.getElementById('autoCalStartBtn').style.display = 'none';
+      document.getElementById('autoCalStopBtn').style.display = 'block';
+      document.getElementById('autoCalStatus').style.display = 'block';
+      document.getElementById('autoCalResults').style.display = 'none';
+      
+      // Reset peak badges
+      for (let i = 1; i <= 5; i++) {
+        const badge = document.getElementById(`peak${i}`);
+        badge.textContent = '-';
+        badge.classList.remove('detected');
+      }
+      
+      // Start polling for status updates
+      autoCalInterval = setInterval(updateAutoCalStatus, 500);
+    })
+    .catch(err => {
+      console.error('Error starting auto-calibration:', err);
+      alert('Failed to start auto-calibration');
+    });
+}
+
+function stopAutoCalibration() {
+  // Send stop request to backend
+  fetch(`/autoCal/stop`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `node=${autoCalCurrentNode}`
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Auto-calibration stopped:', data);
+      resetAutoCalUI();
+    })
+    .catch(err => {
+      console.error('Error stopping auto-calibration:', err);
+    });
+}
+
+function updateAutoCalStatus() {
+  fetch(`/autoCal/status?node=${autoCalCurrentNode}`)
+    .then(response => response.json())
+    .then(data => {
+      if (!data.active) {
+        // Calibration is complete
+        if (data.pass >= 5) {
+          showAutoCalResults(data);
+        }
+        return;
+      }
+      
+      // Update progress
+      const passCount = data.pass || 0;
+      document.getElementById('autoCalPass').textContent = `Pass ${passCount}/5`;
+      document.getElementById('autoCalProgress').style.width = `${(passCount / 5) * 100}%`;
+      
+      // Update real-time RSSI values
+      const currentRssi = data.currentRssi || 0;
+      const minRssi = data.minRssi || 0;
+      const detectionLevel = minRssi + 15; // Detection threshold is 15 points above baseline
+      
+      document.getElementById('autoCalCurrentRssi').textContent = currentRssi;
+      document.getElementById('autoCalBaselineRssi').textContent = minRssi;
+      document.getElementById('autoCalDetectionLevel').textContent = detectionLevel;
+      
+      // Highlight current RSSI if above detection level
+      const rssiElement = document.getElementById('autoCalCurrentRssi');
+      if (currentRssi > detectionLevel) {
+        rssiElement.style.color = 'var(--accent-color)';
+        rssiElement.style.textShadow = '0 0 10px var(--accent-color)';
+      } else {
+        rssiElement.style.color = 'var(--primary-color)';
+        rssiElement.style.textShadow = 'none';
+      }
+      
+      // Update peak badges
+      for (let i = 0; i < 5; i++) {
+        const badge = document.getElementById(`peak${i + 1}`);
+        if (data.peaks[i] > 0) {
+          badge.textContent = data.peaks[i];
+          badge.classList.add('detected');
+        }
+      }
+    })
+    .catch(err => {
+      console.error('Error fetching auto-cal status:', err);
+    });
+}
+
+function showAutoCalResults(data) {
+  if (autoCalInterval) {
+    clearInterval(autoCalInterval);
+    autoCalInterval = null;
+  }
+  
+  // Hide progress, show results
+  document.getElementById('autoCalStatus').style.display = 'none';
+  document.getElementById('autoCalResults').style.display = 'block';
+  document.getElementById('autoCalStopBtn').style.display = 'none';
+  document.getElementById('autoCalStartBtn').style.display = 'block';
+  
+  // Display calculated values
+  document.getElementById('autoCalEnter').textContent = data.calculatedEnter;
+  document.getElementById('autoCalExit').textContent = data.calculatedExit;
+  document.getElementById('autoCalMinRssi').textContent = data.minRssi;
+  
+  // Store results for applying later
+  window.autoCalResults = {
+    node: autoCalCurrentNode,
+    enter: data.calculatedEnter,
+    exit: data.calculatedExit
+  };
+}
+
+function applyAutoCalResults() {
+  if (!window.autoCalResults) return;
+  
+  const { node, enter, exit } = window.autoCalResults;
+  
+  // Apply to the correct node's inputs
+  const enterInput = document.getElementById(`enterInput${node === 1 ? '' : node}`);
+  const exitInput = document.getElementById(`exitInput${node === 1 ? '' : node}`);
+  const enterSlider = document.getElementById(`enter${node === 1 ? '' : node}`);
+  const exitSlider = document.getElementById(`exit${node === 1 ? '' : node}`);
+  
+  if (enterInput && exitInput && enterSlider && exitSlider) {
+    enterInput.value = enter;
+    exitInput.value = exit;
+    enterSlider.value = enter;
+    exitSlider.value = exit;
+    
+    // Update the node state
+    const nodeKey = node;
+    if (nodes[nodeKey]) {
+      nodes[nodeKey].enterRssi = enter;
+      nodes[nodeKey].exitRssi = exit;
+    }
+    
+    alert(`Auto-calibration values applied to Node ${node}!\n\nEnter RSSI: ${enter}\nExit RSSI: ${exit}\n\nDon't forget to click "Save RSSI Thresholds" to persist these values.`);
+    
+    // Reset UI
+    document.getElementById('autoCalResults').style.display = 'none';
+    window.autoCalResults = null;
+  }
+}
+
+function discardAutoCalResults() {
+  document.getElementById('autoCalResults').style.display = 'none';
+  window.autoCalResults = null;
+  alert('Auto-calibration results discarded.');
+}
+
+function resetAutoCalUI() {
+  if (autoCalInterval) {
+    clearInterval(autoCalInterval);
+    autoCalInterval = null;
+  }
+  
+  document.getElementById('autoCalStartBtn').style.display = 'block';
+  document.getElementById('autoCalStopBtn').style.display = 'none';
+  document.getElementById('autoCalStatus').style.display = 'none';
+  document.getElementById('autoCalResults').style.display = 'none';
+}
+
+// Add cleanup when leaving calibration tab
+const originalOpenTab = window.openTab;
+window.openTab = function(evt, tabName) {
+  if (autoCalInterval && tabName !== 'calib') {
+    stopAutoCalibration();
+  }
+  if (originalOpenTab) {
+    originalOpenTab(evt, tabName);
+  }
+};

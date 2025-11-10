@@ -614,9 +614,16 @@ table tr:hover {
   overflow: hidden;
   box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
+  display: none; /* Hide all by default, JS will show based on activeNodeCount */
 }
 
-/* Hide Node 3 and Node 4 cards by default */
+/* Node 1 is shown by default (for when JS hasn't loaded yet) */
+.node-card.node-1 {
+  display: block;
+}
+
+/* The rest are hidden by default and JS will show them */
+.node-card.node-2,
 .node-card.node-3,
 .node-card.node-4 {
   display: none;
@@ -1413,4 +1420,35 @@ footer a:hover {
 /* When 3-lap columns are hidden, adjust the table layout */
 #unifiedLapTable.hide-3lap {
   table-layout: auto;
+}
+
+/* Auto-Calibration Styles */
+.peak-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-weight: bold;
+  font-size: 14px;
+  min-width: 50px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.peak-badge.detected {
+  background: var(--primary-gradient);
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(var(--primary-color-rgb), 0.3);
+}
+
+#autoCalSection button {
+  transition: all 0.3s ease;
+}
+
+#autoCalSection button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
