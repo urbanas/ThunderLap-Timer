@@ -20,7 +20,7 @@ If you enjoy using ThunderLap Timer and find it useful for your FPV racing, cons
 
 ---
 
-> **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been heavily modified to support multi-node timing and frequency hopping. The codebase has undergone extensive development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, frequency hopping mode, auto-calibration, and numerous feature additions. While approximately 30-40% of the original code is reused (core timing algorithms, RX5808 communication), this multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
+> **Project Origin:** This project was originally forked from [PhobosLT by DavHau](https://github.com/DavHau/PhobosLT) and has been extensively rewritten to support multi-node timing and frequency hopping. The codebase has undergone major development including a complete UI redesign, mobile/desktop optimization, multi-node architecture, frequency hopping mode, auto-calibration, and numerous feature additions. While approximately 15-20% of the original code is retained (core timing algorithms, RX5808 communication, Kalman filtering), the majority has been rewritten or is entirely new. This multi-node implementation would not have been possible without the foundation provided by the original PhobosLT project.
 
 ---
 
@@ -589,7 +589,7 @@ This fork extends the original PhobosLT with:
 - ✅ **Frequency Reference Guide** - Comprehensive FPV band documentation
 - ✅ **Architecture Improvements** - Refactored codebase, improved memory management, expanded API
 
-**Code Retention:** ~30-40% of original PhobosLT code remains (core timing logic, RX5808 SPI communication, Kalman filtering, battery monitoring)
+**Code Retention:** ~15-20% of original PhobosLT code remains (core timing algorithms, RX5808 SPI communication, Kalman filtering, battery monitoring, peripheral controls)
 
 ---
 
